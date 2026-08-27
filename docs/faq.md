@@ -61,8 +61,6 @@ A12:除了健身房一律一直开放
 
 作息时间表
 
-![](/images/5d9736da6212524a.jpg)
-
 （六点二十之前到操场晚上在宿舍里的自习室可以待到十二点）
 
 晚自习后宿舍提供自习室
@@ -71,38 +69,10 @@ A12:除了健身房一律一直开放
 
 宿舍相关
 
-![](/images/30d6cf23c382d96b.jpg)
-
-![](/images/95955049e564b143.jpg)
-
-![](/images/14cd2c661d1eeaca.jpg)
-
-![](/images/08199f4e64b45809.jpg)
-
-![](/images/1a4003d95b4441b6.jpg)
-
 自习室相关
 
 目前仍采取食堂为夜自习教室，寝室内教室用于加班
 
-![](/images/d89ae042676b5998.jpg)
-
-![](/images/1ae08e6c7771e714.jpg)
-
 航拍影像及图书楼影像
 
 图源：那弘泽
-
-![](/images/3b8a65e974015313.jpg)
-
-![](/images/daf8844208b2b1c0.jpg)
-
-![](/images/9adb06b0ff7ab8c7.jpg)
-
-![](/images/c6c447a184c6445d.jpg)
-
-![](/images/ad250ef3346941a1.jpg)
-
-![](/images/bc1057f5d7a8f9b2.jpg)
-
-![](/images/fd878e547f0d38be.jpg)

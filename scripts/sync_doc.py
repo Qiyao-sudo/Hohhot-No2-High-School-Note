@@ -212,7 +212,16 @@ def is_junk(s):
 
 
 def decode_tdfn(s):
-    return re.sub(r"%u([0-9A-Fa-f]{4})", lambda m: chr(int(m.group(1), 16)), s)
+    r"""链接名形如 %u00E5%u0091%u00BC… —— 是 UTF-8 字节的逐字节转义,
+    连续的 %uXXXX 需先还原为字节序列再按 UTF-8 解码。"""
+    def repl(m):
+        try:
+            raw = bytes(int(h, 16)
+                        for h in re.findall(r"%u([0-9A-Fa-f]{4})", m.group(0)))
+            return raw.decode("utf-8")
+        except (ValueError, UnicodeDecodeError):
+            return m.group(0)
+    return re.sub(r"(?:%u[0-9A-Fa-f]{4})+", repl, s)
 
 
 def para_to_markdown(s):
