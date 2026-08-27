@@ -592,18 +592,50 @@ def main():
         written.append(page["file"])
         print(f"✓ docs/{page['file']} ({len(body)} 段)")
 
-    # 引言写入 index.md 的同步区块
+    # 引言写入 index.md 的同步区块(结构化面板)
     if preamble:
-        intro = ["<!-- SYNC:INTRO START -->", "## 文档简介\n"]
+        who = date = motto = attach = img = ""
+        notes = []
         for p, lvl in preamble:
+            plain = plain_text(p)
             if p.startswith("![]"):
-                intro.append(p + "\n")
-                continue
-            md = para_to_markdown(plain_text(p) and p)
-            if md:
-                intro.append(md + "\n")
-        intro.append("<!-- SYNC:INTRO END -->")
-        block = "\n".join(intro)
+                m = re.search(r"\((/images/[^)]+)\)", p)
+                img = m.group(1) if m else ""
+            elif p.startswith(">") and "附件" in p:
+                # 附件行: 去掉引用/链接/斜体语法与 emoji, 留纯文本
+                attach = re.sub(r"📎|\*|\[([^\]]+)\]\([^)]*\)", lambda m: m.group(1) or "", plain).strip()
+            elif plain.startswith("最近更新于"):
+                date = plain
+            elif "今天拼搏在二中" in plain:
+                motto = plain
+            elif not who and "学长" in plain:
+                who = plain
+            elif len(plain) > 1:
+                # 去掉整行加粗外壳; 行内 ** 转为 <strong>(HTML 块内不解析 Markdown)
+                line = re.sub(r"^\*\*(.+)\*\*$", r"\1", p.strip())
+                line = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", line)
+                notes.append(line)
+        parts = [
+            "<!-- SYNC:INTRO START -->",
+            "## 文档简介\n",
+            '<section class="doc-intro">',
+            '<header class="doc-intro-meta">',
+            f'<span class="who">{who}</span>',
+            f'<span class="date">{date}</span>' if date else "",
+            "</header>",
+            f'<p class="doc-intro-motto">{motto}</p>' if motto else "",
+            '<ul class="doc-intro-notes">',
+            *[f"<li>{n}</li>" for n in notes],
+            "</ul>",
+            '<footer class="doc-intro-foot">',
+            f'<span class="attach">{attach}</span>' if attach else "",
+            '<a href="https://docs.qq.com/doc/%s">查看源文档</a>' % DOC_ID,
+            f'<img class="thumb" src="{img}" alt="源文档截图" />' if img else "",
+            "</footer>",
+            "</section>",
+            "<!-- SYNC:INTRO END -->",
+        ]
+        block = "\n".join(x for x in parts if x)
         index_file = DOCS_DIR / "index.md"
         if index_file.exists():
             content = index_file.read_text(encoding="utf-8")
@@ -613,7 +645,7 @@ def main():
         else:
             content = block
         index_file.write_text(content, encoding="utf-8")
-        print(f"✓ docs/index.md 引言 ({len(preamble)} 段)")
+        print(f"✓ docs/index.md 引言面板 ({len(notes)} 条说明)")
 
     # 留言处导出为 JSON, 供前端与 Waline 评论并排展示
     msg = next(((t, b) for t, b in sections if t == "留言处"), None)

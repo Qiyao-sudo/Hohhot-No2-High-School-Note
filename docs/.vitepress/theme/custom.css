@@ -375,13 +375,142 @@
   background: var(--vp-c-brand-2);
 }
 
-/* 首页文档简介(自动同步区块) */
+/* 首页文档简介(自动同步的结构化面板) */
 .home-intro {
   max-width: 860px;
   margin: 0 auto;
   padding: 0 1.5rem 3.5rem;
+}
+
+.home-intro h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 2.4rem 0 1.4rem;
+  color: var(--vp-c-text-1);
+  border: none;
+  padding: 0;
+}
+
+.doc-intro {
+  border: 1px solid var(--vp-c-border);
+  background: var(--vp-c-bg-elv);
+  border-radius: var(--hs2-radius);
+  padding: 1.5rem 1.8rem 1.3rem;
+}
+
+.doc-intro-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: var(--vp-c-text-3);
+  font-size: 0.85rem;
+}
+
+.doc-intro-meta .date {
+  white-space: nowrap;
+}
+
+/* 校训: 居中, 两侧细线 */
+.doc-intro-motto {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin: 1.3rem 0 1.5rem;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--vp-c-brand-2);
+}
+
+.doc-intro-motto::before,
+.doc-intro-motto::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--vp-c-divider);
+}
+
+/* 说明列表: 方点标记, 柔和高亮 */
+.doc-intro-notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
   color: var(--vp-c-text-2);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  line-height: 1.75;
+}
+
+.doc-intro-notes li {
+  position: relative;
+  padding-left: 1.05em;
+}
+
+.doc-intro-notes li::before {
+  content: '';
+  position: absolute;
+  left: 0.15em;
+  top: 0.72em;
+  width: 5px;
+  height: 5px;
+  border-radius: 2px;
+  background: var(--vp-c-brand-1);
+  opacity: 0.55;
+}
+
+.doc-intro-notes mark {
+  background: #fdf3d0;
+  padding: 0.05em 0.3em;
+  border-radius: var(--hs2-radius-sm);
+  font-weight: 600;
+}
+
+.dark .doc-intro-notes mark {
+  background: #4d4014;
+  color: #f5e9c8;
+}
+
+/* 底部: 附件 + 源文档链接 + 截图缩略图 */
+.doc-intro-foot {
+  margin-top: 1.3rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--vp-c-border);
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+  color: var(--vp-c-text-3);
+  font-size: 0.82rem;
+}
+
+.doc-intro-foot .attach {
+  min-width: 0;
+}
+
+.doc-intro-foot a {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.doc-intro-foot a:hover {
+  text-decoration: underline;
+}
+
+.doc-intro-foot img.thumb {
+  height: 92px;
+  width: auto;
+  max-width: 30%;
+  object-fit: cover;
+  border-radius: var(--hs2-radius-sm);
+  border: 1px solid var(--vp-c-border);
+  margin: 0;
+  display: block;
 }
 
 /* 入场动效(尊重 reduced motion) */
