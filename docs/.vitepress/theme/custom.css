@@ -521,14 +521,60 @@
 }
 
 .doc-intro-foot img.thumb {
-  height: 92px;
+  height: 140px;
   width: auto;
-  max-width: 30%;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: var(--hs2-radius-sm);
   border: 1px solid var(--vp-c-border);
   margin: 0;
   display: block;
+  cursor: zoom-in;
+  transition: transform 0.18s ease;
+}
+
+.doc-intro-foot img.thumb:hover {
+  transform: scale(1.03);
+}
+
+/* 校歌图片灯箱: 点击放大阅读 */
+.img-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(15, 16, 20, 0.78);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2.5rem;
+  cursor: zoom-out;
+}
+
+.img-lightbox img {
+  max-width: min(92vw, 560px);
+  max-height: 86vh;
+  border-radius: var(--hs2-radius);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+}
+
+.img-lightbox-hint {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.8rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .img-lightbox {
+    animation: hs2-fade 0.2s ease both;
+  }
+  @keyframes hs2-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 }
 
 /* 入场动效(尊重 reduced motion) */
