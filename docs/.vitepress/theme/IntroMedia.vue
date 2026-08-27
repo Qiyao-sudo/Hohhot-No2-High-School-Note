@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// 首页"文档简介"面板底部的媒体行: 音频播放器 + 源文档链接 + 校歌图片(点击放大)
-// 路径统一经 withBase 处理(适配 GitHub Pages 子路径部署)
-import { onMounted, onUnmounted, ref } from 'vue'
+// 首页"文档简介"面板底部的媒体行: 音频播放器 + 源文档链接 + 校歌图片。
+// 图片点击放大由全局 ImageLightbox 组件处理(Layout 挂载)。
+// 路径统一经 withBase 处理(适配 GitHub Pages 子路径部署)。
 import { withBase } from 'vitepress'
 
 defineProps<{
@@ -10,14 +10,6 @@ defineProps<{
   thumb?: string
   link: string
 }>()
-
-const zoom = ref(false)
-
-const onKey = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') zoom.value = false
-}
-onMounted(() => window.addEventListener('keydown', onKey))
-onUnmounted(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <template>
@@ -35,13 +27,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       :src="withBase(thumb)"
       alt="校歌（点击放大）"
       title="点击放大查看"
-      @click="zoom = true"
     />
-    <Teleport to="body">
-      <div v-if="zoom" class="img-lightbox" @click="zoom = false">
-        <img :src="withBase(thumb)" alt="校歌" />
-        <span class="img-lightbox-hint">点击任意处或按 Esc 关闭</span>
-      </div>
-    </Teleport>
   </footer>
 </template>
