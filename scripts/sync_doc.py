@@ -348,11 +348,16 @@ def esc(s):
 
 
 def render_line(seg_text, base, style_at):
-    """按字符样式渲染一行为 HTML/Markdown 混合文本(跳过不可见控制字符)"""
+    """按字符样式渲染一行为 HTML/Markdown 混合文本(跳过不可见控制字符)。
+
+    两个关键修正, 否则 Markdown 强调无法闭合而显示字面 ``**``:
+    - 加粗段首尾的空格移到强调标记之外(" 字**" -> " **字")
+    - 相邻的加粗段合并为一组(避免 "**a****b**" 中的空强调对)
+    """
     runs = []
     cur_style, buf = None, []
     for k, ch in enumerate(seg_text):
-        if not (ch.isprintable() and ch not in "\x08\x0c"):
+        if not (ch.isprintable() and ch not in ""):
             continue
         st = style_at(base + k)
         if st != cur_style:
@@ -363,21 +368,54 @@ def render_line(seg_text, base, style_at):
             buf.append(ch)
     if buf:
         runs.append((cur_style, "".join(buf)))
-    parts = []
+
+    # 规范化: 空白成为独立的无样式段, 避免破坏 ** 配对
+    normalized = []
     for st, chunk in runs:
         if not chunk.strip():
+            normalized.append((None, chunk))
+            continue
+        lead = len(chunk) - len(chunk.lstrip())
+        trail = len(chunk) - len(chunk.rstrip())
+        if lead:
+            normalized.append((None, chunk[:lead]))
+        body = chunk[lead:len(chunk) - trail] if trail else chunk[lead:]
+        if body:
+            normalized.append((st, body))
+        if trail:
+            normalized.append((None, chunk[len(chunk) - trail:]))
+
+    # 渲染并合并相邻加粗段
+    parts = []
+    bold_buf = []
+
+    def flush_bold():
+        if bold_buf:
+            # 用 <strong> 而非 **: CJK 词内强调(如 "单**休制度**")不满足
+            # CommonMark 定界符侧性规则, 会显示字面星号
+            parts.append("<strong>" + "".join(bold_buf) + "</strong>")
+            bold_buf.clear()
+
+    for st, chunk in normalized:
+        if not chunk:
             continue
         t = esc(chunk)
-        color, mark, bold = st
+        # 源文档部分段落本身用 Markdown 语法书写(如 "**理解基础概念**"),
+        # 转义后还原为真正的加粗
+        t = re.sub(r"&#42;&#42;(.+?)&#42;&#42;", r"<strong></strong>", t)
+        color, mark, bold = st if st else (None, None, None)
+        inner = t
         if color:
-            t = f'<span style="color:#{color}">{t}</span>'
+            inner = f'<span style="color:#{color}">{inner}</span>'
         if mark:
-            t = f"<mark>{t}</mark>"
+            inner = f"<mark>{inner}</mark>"
         if bold:
-            t = f"**{t}**"
-        parts.append(t)
+            bold_buf.append(inner)
+        else:
+            flush_bold()
+            parts.append(inner)
+    flush_bold()
     return "".join(parts)
-
 
 HEADING_EXCLUDE = re.compile(r"^[-*•·—]")
 

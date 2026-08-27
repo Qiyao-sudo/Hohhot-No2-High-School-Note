@@ -12,37 +12,37 @@ title: 二中传统
 
 欢迎补充
 
-报了**呼伦校区的同学们，一定要记得上钟楼看一看。那个地方于2025年由两位精通电脑的学长正式点亮，如果有机会的话，一定要自己上去一次。那里有各个学长的名字，也欢迎你留言。**
+报了<strong>呼伦校区的同学们，一定要记得上钟楼看一看。那个地方于2025年由两位精通电脑的学长正式点亮，如果有机会的话，一定要自己上去一次。那里有各个学长的名字，也欢迎你留言。</strong>
 
 ![](/images/4990f87e84cf76b4.jpg)
 
-**如意景区**
+<strong>如意景区</strong>
 
-**实验楼楼顶签名墙**
+<strong>实验楼楼顶签名墙</strong>
 
-**图书馆楼顶签名墙**
+<strong>图书馆楼顶签名墙</strong>
 
-**体育馆天文台**
+<strong>体育馆天文台</strong>
 
-**水塔**
+<strong>水塔</strong>
 
-**呼伦景区**
+<strong>呼伦景区</strong>
 
-**A座楼顶**
+<strong>A座楼顶</strong>
 
-**钟楼**
+<strong>钟楼</strong>
 
 ![](/images/9431a60cfb56d09b.jpg)
 
 ![](/images/25f87d748a39e527.jpg)
 
-**C座地道**
+<strong>C座地道</strong>
 
-**棋牌室**
+<strong>棋牌室</strong>
 
-**金川**景区
+<strong>金川</strong>景区
 
-图书**楼日落**
+图书<strong>楼日落</strong>
 
 ![](/images/08bb0b82bff2e5e0.jpg)
 
