@@ -18,19 +18,37 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '新生须知', link: '/freshman' },
-      { text: '日常生活', link: '/daily' },
+      { text: '校园生活', link: '/daily' },
       { text: '学习板块', link: '/study' },
-      { text: '常见问题', link: '/faq' },
       { text: '留言处', link: '/messages' },
     ],
     sidebar: [
       {
-        text: '指南',
+        text: '新生',
         items: [
           { text: '新生须知', link: '/freshman' },
           { text: '日常生活', link: '/daily' },
-          { text: '常见问题汇总', link: '/faq' },
+        ],
+      },
+      {
+        text: '校园组织',
+        items: [
+          { text: '学生会 国旗班 播音站', link: '/student-org' },
+          { text: '社团相关', link: '/clubs' },
+        ],
+      },
+      {
+        text: '政策与管理',
+        items: [
+          { text: '日常学习政策及环境', link: '/study-policy' },
+          { text: '日常管理', link: '/management' },
+          { text: '金川校区情况', link: '/jinchuan' },
           { text: '二中传统', link: '/tradition' },
+        ],
+      },
+      {
+        text: '学习与互动',
+        items: [
           { text: '学习板块', link: '/study' },
           { text: '留言处', link: '/messages' },
           { text: '后记', link: '/afterword' },

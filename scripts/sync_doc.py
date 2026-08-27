@@ -41,16 +41,61 @@ HEADERS = {
     "Referer": "https://docs.qq.com/doc/" + DOC_ID,
 }
 
-# 各板块标题(正文中逐字出现), 按文档顺序生成页面
-SECTIONS = [
-    {"file": "freshman.md", "title": "新生须知", "headings": ["新生须知"]},
-    {"file": "daily.md", "title": "日常生活", "headings": ["日常生活"]},
-    {"file": "faq.md", "title": "常见问题汇总", "headings": ["关于一些常见的问题汇总"]},
-    {"file": "tradition.md", "title": "二中传统", "headings": ["二中传统", "关于二中传统"]},
-    {"file": "study.md", "title": "学习板块", "headings": ["学习板块"]},
-    {"file": "messages.md", "title": "留言处", "headings": ["留言处"], "comment": True},
-    {"file": "afterword.md", "title": "后记", "headings": ["后记"]},
+# 板块(源文档大纲的二级标题)→ 页面文件的映射。
+# 大纲层级来自 scripts/outline.json(由腾讯文档 /p/ 发布页的大纲面板提取,
+# 条目 class 为 headline-title/headingtwo/headingthree/headingother)。
+PAGES = [
+    {"file": "freshman.md", "title": "新生须知"},
+    {"file": "daily.md", "title": "日常生活"},
+    {"file": "student-org.md", "title": "学生会 国旗班 播音站相关"},
+    {"file": "clubs.md", "title": "社团相关"},
+    {"file": "study-policy.md", "title": "日常学习政策及环境"},
+    {"file": "management.md", "title": "日常管理"},
+    {"file": "jinchuan.md", "title": "金川校区情况"},
+    {"file": "tradition.md", "title": "二中传统"},
+    {"file": "study.md", "title": "学习板块"},
+    {"file": "messages.md", "title": "留言处", "comment": True},
+    {"file": "afterword.md", "title": "后记"},
 ]
+
+# 过小的板块并入前一页(避免单行页面)
+MERGE_INTO_PREV = {"更多Q&A": "messages.md"}
+
+OUTLINE_FILE = Path(__file__).resolve().parent / "outline.json"
+
+
+def load_outline():
+    """读取大纲: 返回 {标题文本: 层级} 与 H2 板块顺序"""
+    data = json_loads(OUTLINE_FILE.read_text(encoding="utf-8"))
+    level_map, h2_order = {}, []
+    for item in data:
+        cls = item.get("cls", "")
+        text = item.get("text", "").strip()
+        if not text:
+            continue
+        if "headline-title" in cls:
+            lvl = 1
+        elif "headline-headingother" in cls:  # 更深层级(注意先于通用匹配)
+            lvl = 4
+        elif "headline-headingtwo" in cls:
+            lvl = 2
+        elif "headline-headingthree" in cls:
+            lvl = 3
+        elif "headline-heading" in cls:  # headingone 等
+            lvl = 2
+        else:
+            lvl = 4
+        # 同名条目保留更高层级
+        if text not in level_map or lvl < level_map[text]:
+            level_map[text] = lvl
+        if lvl == 2 and text not in h2_order:
+            h2_order.append(text)
+    return level_map, h2_order
+
+
+def json_loads(s):
+    import json
+    return json.loads(s)
 
 JUNK_RES = [
     re.compile(r"^(Arial|微软雅黑|宋体|黑体|Calibri|Times New Roman)$"),
@@ -291,14 +336,18 @@ def plain_text(line):
 
 
 def esc(s):
-    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    """转义正文字面字符: HTML 实体 + Markdown 强调符(避免破坏 ** 加粗结构)"""
+    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            .replace("*", "&#42;").replace("_", "&#95;"))
 
 
 def render_line(seg_text, base, style_at):
-    """按字符样式渲染一行为 HTML/Markdown 混合文本"""
+    """按字符样式渲染一行为 HTML/Markdown 混合文本(跳过不可见控制字符)"""
     runs = []
     cur_style, buf = None, []
     for k, ch in enumerate(seg_text):
+        if not (ch.isprintable() and ch not in "\x08\x0c"):
+            continue
         st = style_at(base + k)
         if st != cur_style:
             if buf:
@@ -310,7 +359,7 @@ def render_line(seg_text, base, style_at):
         runs.append((cur_style, "".join(buf)))
     parts = []
     for st, chunk in runs:
-        if not chunk:
+        if not chunk.strip():
             continue
         t = esc(chunk)
         color, mark, bold = st
@@ -324,74 +373,30 @@ def render_line(seg_text, base, style_at):
     return "".join(parts)
 
 
-def line_style_stats(s, e, style_at):
-    """行内可见字符的样式覆盖率: (bold_ratio, colored_ratio)"""
-    n = b = c = 0
-    for i in range(s, e):
-        st = style_at(i)
-        n += 1
-        b += 1 if st[2] else 0
-        c += 1 if st[0] else 0
-    if not n:
-        return 0.0, 0.0
-    return b / n, c / n
-
-
 HEADING_EXCLUDE = re.compile(r"^[-*•·—]")
-PARTICLE_END = ("哈", "哦", "吧", "呢", "啊", "呀", "啦", "嘛")
-# 含这些标点的行视为内容而非标题(Q&A/序号条目除外, 它们先行判定)
-CONTENT_PUNCT = "，。：；？！、~@—:"
 
 
-def heading_level(line, bold_ratio, colored_ratio):
-    """推断标题层级(2/3/4), 非标题返回 None。
-
-    原文档未使用 Word 标题样式, 层级由文本模式 + 加粗/着色推断:
-    - 二级: "关于X" / "X景区" 小节
-    - 三级: 01/02 步骤、Q&A 问题、简短加粗/着色行、固定小标题
-    - 四级: 中文序号条目(学习方法"一、二、…"等)
-    """
+def heading_level(line, level_map):
+    """标题层级以大纲(scripts/outline.json)为准;
+    大纲未覆盖的新增行按可靠文本模式兜底。返回 0 表示正文。"""
     s = line.strip()
     if len(s) < 2 or len(s) > 60 or HEADING_EXCLUDE.match(s):
-        return None
-    # Q&A 问题与数字步骤先判定(可能以 ？/。 结尾)
+        return 0
+    if s in level_map:
+        return level_map[s]
+    # 兜底: 大纲未收录的新标题(源文档更新后)
+    if re.fullmatch(r"关于.{1,14}", s):
+        return 4
     if re.match(r"^Q\d+[:：]", s) and len(s) <= 30:
-        return 3
-    if re.match(r"^0\d(\s|\s*$)", s):
-        return 3
+        return 4
     if re.match(r"^[一二三四五六七八九十]+、", s):
         return 4
-    # 内容性行: 含标点/日期/时间段
-    if any(c in s for c in CONTENT_PUNCT):
-        return None
-    if s.endswith(PARTICLE_END) or re.search(r"\d+月\d+日|\d+:\d+", s):
-        return None
-    fully_bold = bold_ratio >= 0.8
-    fully_colored = colored_ratio >= 0.8
-    # 二级: 关于X / X景区
-    if re.fullmatch(r"(关于|呼伦景区|如意景区|金川景区|二中传统).{0,14}", s):
-        return 2
-    # 三级: 校区小节 / 固定小标题 / 整行加粗或着色的短行
-    if s in ("呼伦", "如意", "金川", "呼伦/如意"):
-        return 3
-    if s in KNOWN_SUBHEADINGS:
-        return 3
-    if len(s) <= 16 and (fully_bold or fully_colored):
-        return 3
-    return None
+    return 0
 
 
-# 源文档中出现过的小标题用词(同步时按需补充)
-KNOWN_SUBHEADINGS = {
-    "菜单", "宿舍相关", "自习室相关", "作息时间表", "教材", "通用学习方法",
-    "学科学习方法", "夜自习管理", "间操", "活动课", "夜自习", "航拍影像及图书楼影像",
-    "更多Q&A", "欢迎补充", "高一", "高二", "高三", "恋爱相关", "头发相关",
-}
-
-
-def build_lines(text, images, url_map, styles):
+def build_lines(text, images, url_map, styles, level_map):
     """把全文文本按 \\r 拆行, 在图片锚点处插入图片, 应用行内样式并识别标题层级。
-    返回 [(line, level)] — level 为 0 表示正文。"""
+    返回 [(line, level)] — level 为 0 表示正文, 1 为文档标题。"""
     imgs = sorted(
         [(pos, url) for pos, url in images if url in url_map], key=lambda t: t[0])
 
@@ -431,14 +436,15 @@ def build_lines(text, images, url_map, styles):
         plain = "".join(seg[k] for k in visible).strip()
         if is_junk(plain):
             continue
-        bold_n = color_n = 0
-        for k in visible:
-            st = style_at(s + k)
-            bold_n += 1 if st[2] else 0
-            color_n += 1 if st[0] else 0
-        bold_ratio = bold_n / len(visible)
-        color_ratio = color_n / len(visible)
-        lvl = heading_level(plain, bold_ratio, color_ratio)
+        lvl = heading_level(plain, level_map)
+        if lvl and lvl <= 1:
+            continue  # 文档主标题不进正文
+        if "ATTACHMENT" in plain or "HYPERLINK" in plain:
+            # 附件/链接占位行: 纯文本转换(避免内联标签被截断产生未闭合 HTML)
+            md = para_to_markdown(plain)
+            if md:
+                out.append((md, 0))
+            continue
         if lvl:
             out.append((plain, lvl))
         else:
@@ -446,12 +452,6 @@ def build_lines(text, images, url_map, styles):
             rendered = rendered.strip()
             if rendered and not is_junk(re.sub(r"<[^>]+>", "", rendered)):
                 out.append((rendered, 0))
-    # "加粗标签 + 配图"的设施清单: 标题后紧跟图片则降为四级(图注性质)
-    campus = {"呼伦", "如意", "金川", "呼伦/如意"}
-    for i, (ln, lvl) in enumerate(out):
-        if (lvl == 3 and ln not in campus
-                and i + 1 < len(out) and out[i + 1][0].startswith("![]")):
-            out[i] = (ln, 4)
     return out
 
 
@@ -470,6 +470,8 @@ def json_loads(s):
 
 def main():
     dry = "--dry-run" in sys.argv
+    level_map, h2_order = load_outline()
+    print(f"大纲: {len(level_map)} 条, {len(h2_order)} 个板块")
     payload = fetch_json()
     text, images, styles = extract_doc(payload)
     if not text:
@@ -484,11 +486,11 @@ def main():
 
     if "--no-img" in sys.argv:
         url_map = {}
-        paras = build_lines(text, [], {}, styles)
+        paras = build_lines(text, [], {}, styles, level_map)
     else:
         print("下载图片…")
         url_map = download_images(images)
-        paras = build_lines(text, images, url_map, styles)
+        paras = build_lines(text, images, url_map, styles, level_map)
         print(f"图片下载完成: {len(url_map)} 张")
     print(f"解析到 {len(paras)} 个有效段落")
 
@@ -500,55 +502,96 @@ def main():
             paras = paras[:i]
             break
 
-    bounds = []
-    for sec in SECTIONS:
-        start = next((i for i, (p, _) in enumerate(paras)
-                      if plain_text(p) in sec["headings"]), None)
-        if start is None:
-            print(f"⚠ 未找到板块标题: {sec['title']}")
+    # 按大纲 H2 板块切分页面; 第一个 H2 之前为文档引言(写入 index.md)
+    page_of = {p["title"]: p for p in PAGES}
+    sections = []  # (page_title, [(line, level)]), page_title=None 表示引言
+    current_title = None
+    current = []
+    for line, lvl in paras:
+        plain = plain_text(line)
+        if plain in MERGE_INTO_PREV:
+            # 小板块不单独成页, 作为子标题并入当前页
+            current.append((plain, 3))
             continue
-        bounds.append((start, sec))
-    bounds.sort(key=lambda t: t[0])
-    for k, (start, sec) in enumerate(bounds):
-        end = bounds[k + 1][0] if k + 1 < len(bounds) else len(paras)
-        sec["body"] = paras[start + 1:end]
+        if plain in h2_order and lvl == 2:
+            if current or current_title:
+                sections.append((current_title, current))
+            current_title = plain
+            current = []
+            continue
+        current.append((line, lvl))
+    sections.append((current_title, current))
 
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
-
-    for _, sec in bounds:
-        fm = "---\ntitle: %s\n" % sec["title"]
-        if sec.get("comment"):
+    preamble = None
+    written = []
+    for title, body in sections:
+        if title is None:
+            preamble = body
+            continue
+        page = page_of.get(title)
+        if page is None:
+            print(f"⚠ 大纲板块未配置页面文件, 跳过: {title}")
+            continue
+        fm = "---\ntitle: %s\n" % title
+        if page.get("comment"):
             fm += "comment: true\n"
         fm += "---\n\n"
         lines = [
-            fm + "# %s\n\n" % sec["title"]
+            fm + "# %s\n\n" % title
             + "> 本页面由[源文档](https://docs.qq.com/doc/%s)自动同步生成，"
               "如内容有出入请以源文档为准。\n\n" % DOC_ID
         ]
-        for p, lvl in sec["body"]:
+        for p, lvl in body:
             if p.startswith("![]"):
                 lines.append(p + "\n")
                 continue
             if lvl >= 2:
-                lines.append(f"\n{'#' * lvl} {p}\n")
+                # 大纲层级映射为页内 Markdown 标题: H3→##, 更深→###
+                depth = 2 if lvl == 3 else 3
+                lines.append(f"\n{'#' * depth} {p}\n")
                 continue
             md = para_to_markdown(p)
             if md:
                 lines.append(md + "\n")
-        if sec.get("comment"):
+        if page.get("comment"):
             lines.append(
                 "\n---\n\n## 网站留言区\n\n"
                 "上方为[源文档留言处](https://docs.qq.com/doc/"
                 + DOC_ID + ")的同步内容，下方为本站评论区。"
                 "网站留言会定期由维护者整理回源文档留言区。\n"
             )
-        (DOCS_DIR / sec["file"]).write_text("\n".join(lines), encoding="utf-8")
-        print(f"✓ docs/{sec['file']} ({len(sec['body'])} 段)")
+        (DOCS_DIR / page["file"]).write_text("\n".join(lines), encoding="utf-8")
+        written.append(page["file"])
+        print(f"✓ docs/{page['file']} ({len(body)} 段)")
+
+    # 引言写入 index.md 的同步区块
+    if preamble:
+        intro = ["<!-- SYNC:INTRO START -->", "## 文档简介\n"]
+        for p, lvl in preamble:
+            if p.startswith("![]"):
+                intro.append(p + "\n")
+                continue
+            md = para_to_markdown(plain_text(p) and p)
+            if md:
+                intro.append(md + "\n")
+        intro.append("<!-- SYNC:INTRO END -->")
+        block = "\n".join(intro)
+        index_file = DOCS_DIR / "index.md"
+        if index_file.exists():
+            content = index_file.read_text(encoding="utf-8")
+            content = re.sub(
+                r"<!-- SYNC:INTRO START -->.*?<!-- SYNC:INTRO END -->",
+                lambda m: block, content, flags=re.S)
+        else:
+            content = block
+        index_file.write_text(content, encoding="utf-8")
+        print(f"✓ docs/index.md 引言 ({len(preamble)} 段)")
 
     # 留言处导出为 JSON, 供前端与 Waline 评论并排展示
-    msg_sec = next((s for _, s in bounds if s["title"] == "留言处"), None)
-    if msg_sec:
-        messages = [p for p, _ in msg_sec["body"]
+    msg = next(((t, b) for t, b in sections if t == "留言处"), None)
+    if msg:
+        messages = [p for p, _ in msg[1]
                     if len(p) > 1 and not p.startswith("![")]
         MESSAGES_JSON.parent.mkdir(parents=True, exist_ok=True)
         MESSAGES_JSON.write_text(

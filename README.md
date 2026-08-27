@@ -17,7 +17,8 @@
 │   ├── index.md             # 首页(手写, 不被同步覆盖)
 │   └── *.md                 # 各板块页面(由 sync_doc.py 生成)
 ├── scripts/
-│   └── sync_doc.py          # 腾讯文档抓取 → Markdown 转换
+│   ├── sync_doc.py          # 腾讯文档抓取 → Markdown 转换
+│   └── outline.json         # 源文档真实标题大纲(层级权威来源)
 ├── .github/workflows/
 │   └── deploy.yml           # 定时/手动同步 + 构建部署 GitHub Pages
 └── docs/waline-setup.md     # Waline 后端部署指南(Vercel + LeanCloud)
@@ -64,9 +65,14 @@ WALINE_SERVERURL=https://<你的waline>.vercel.app npm run build
 
 ## 已知限制
 
+- **标题层级**以 `scripts/outline.json`（从腾讯文档 /p/ 发布页"大纲"面板提取的
+  真实层级，共 89 条）为准；源文档新增标题后需重新提取大纲（打开
+  `https://docs.qq.com/doc/p/f562ec68dbad4055a691e9676d26d82adf05aa4f`，
+  展开"大纲"面板，复制 `.headline-text` 条目的 class 与文本到 outline.json），
+  未收录的新标题按"关于X / Q&A / 中文序号"模式兜底识别为三级。
+- **板块划分**跟随大纲二级标题（共 12 个板块 → 11 个页面，"更多Q&A"并入留言页）。
 - 源文档中的**图片**已支持自动抓取嵌入（protobuf 解析图片锚点位置 + docimg
   CDN 下载，本地用 Pillow 压缩到宽 1000px，约 19MB）；**音频附件**无法匿名
-  下载，以“📎 附件占位”标注并链回原文档。
-- 源文档的复杂表格、加粗等富文本样式在转换后会退化为纯文本段落。
+  下载，以"📎 附件占位"标注并链回原文档。
+- 源文档的复杂表格在转换后会退化为纯文本段落；加粗/颜色/高亮按字符精确保留。
 - 腾讯文档使用内部接口，若其结构变更需同步更新 `scripts/sync_doc.py`。
-- 音频等附件的引用链接在页面中保留为指向原文档的占位提示。
