@@ -28,11 +28,7 @@ import HomeHero from './.vitepress/theme/HomeHero.vue'
 <li><mark>部分文字和图片引用了新生群同学的聊天记录，已标注，在此对他们表示致谢。如有未标注到的地方请谅解，并在后面及时补充。</mark></li>
 <li><mark>文章如有帮助，可以帮忙转发给其他同学，让更多同学能够提前熟悉高中环境&#42;</mark></li>
 </ul>
-<footer class="doc-intro-foot">
-<span class="attach">>  源文档附件：我们正年轻（伴奏）.mp3（请见原文档）</span>
-<a href="https://docs.qq.com/doc/DYm5PeUxOVmdEZmxs">查看源文档</a>
-<img class="thumb" src="/images/e6339d0998cc9740.jpg" alt="源文档截图" />
-</footer>
+<IntroMedia link="https://docs.qq.com/doc/DYm5PeUxOVmdEZmxs" audio="/audio/nian-qing.mp3" name="我们正年轻（伴奏）.mp3" thumb="/images/e6339d0998cc9740.jpg" />
 </section>
 <!-- SYNC:INTRO END -->
 

@@ -474,7 +474,7 @@
   color: #f5e9c8;
 }
 
-/* 底部: 附件 + 源文档链接 + 截图缩略图 */
+/* 底部: 音频/附件 + 源文档链接 + 截图缩略图 */
 .doc-intro-foot {
   margin-top: 1.3rem;
   padding-top: 1rem;
@@ -485,6 +485,24 @@
   flex-wrap: wrap;
   color: var(--vp-c-text-3);
   font-size: 0.82rem;
+}
+
+.doc-intro-audio {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.doc-intro-audio .audio-name {
+  color: var(--vp-c-text-2);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.doc-intro-audio audio {
+  height: 34px;
+  max-width: 300px;
 }
 
 .doc-intro-foot .attach {

@@ -593,6 +593,8 @@ def main():
         print(f"✓ docs/{page['file']} ({len(body)} 段)")
 
     # 引言写入 index.md 的同步区块(结构化面板)
+    # 已本地化的音频附件(源文档附件 → 站内文件, 首页为根路径用相对地址)
+    AUDIO_FILES = {"我们正年轻（伴奏）.mp3": "/audio/nian-qing.mp3"}
     if preamble:
         who = date = motto = attach = img = ""
         notes = []
@@ -615,6 +617,15 @@ def main():
                 line = re.sub(r"^\*\*(.+)\*\*$", r"\1", p.strip())
                 line = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", line)
                 notes.append(line)
+        # 音频附件 + 截图 + 源文档链接 → IntroMedia 全局组件(内部处理 base 路径)
+        track = next(((k, v) for k, v in AUDIO_FILES.items() if k in attach), None)
+        media_props = [
+            f'link="https://docs.qq.com/doc/{DOC_ID}"',
+            f'audio="{track[1]}" name="{track[0]}"' if track else "",
+            f'thumb="{img}"' if img else "",
+        ]
+        media = "<IntroMedia %s />" % " ".join(x for x in media_props if x)
+
         parts = [
             "<!-- SYNC:INTRO START -->",
             "## 文档简介\n",
@@ -627,11 +638,7 @@ def main():
             '<ul class="doc-intro-notes">',
             *[f"<li>{n}</li>" for n in notes],
             "</ul>",
-            '<footer class="doc-intro-foot">',
-            f'<span class="attach">{attach}</span>' if attach else "",
-            '<a href="https://docs.qq.com/doc/%s">查看源文档</a>' % DOC_ID,
-            f'<img class="thumb" src="{img}" alt="源文档截图" />' if img else "",
-            "</footer>",
+            media,
             "</section>",
             "<!-- SYNC:INTRO END -->",
         ]
