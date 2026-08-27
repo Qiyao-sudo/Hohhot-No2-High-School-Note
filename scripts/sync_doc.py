@@ -113,12 +113,18 @@ def parse_fields(buf):
 
 
 def extract_doc(payload):
-    """返回 (全文文本, [(锚点字符位置, 图片URL), ...])"""
+    """返回 (全文文本, [(锚点字符位置, 图片URL), ...], [样式段, ...])
+
+    样式段 = (起始, 结束, {"bold": bool, "color": hex, "mark": hex})
+    - 文字颜色: f201 载荷中 field37/field53, 形如 "\\x0a\\x08\\x0a\\x06<6hex>"
+    - 高亮背景: field59 中 "\\x5a\\x08\\x0a\\x06<6hex>"
+    - 加粗: field59 "\\xda\\x03..\\x08\\x02" 或 field3 "\\x1a\\x02\\x08\\x02"
+    """
     b64 = payload["clientVars"]["collab_client_vars"]["initialAttributedText"]["text"][0]
     raw = base64.b64decode(b64 + "=" * (-len(b64) % 4))
     records = [v for f, v in parse_fields(parse_fields(raw)[0][1])
                if f == 2 and isinstance(v, bytes)]
-    text, images = None, []
+    text, images, styles = None, [], []
     for r in records:
         if b"docimg" in r:
             d = {}
@@ -129,7 +135,8 @@ def extract_doc(payload):
             m = re.search(rb"https://docimg[^\x00\x1a\x22*]+", d[7])
             if m:
                 images.append((pos, m.group().decode(errors="ignore").rstrip("*")))
-        elif text is None:
+            continue
+        if text is None:
             for f, v in parse_fields(r):
                 if f == 6 and len(v) > 1000:
                     sub = parse_fields(v)
@@ -139,7 +146,30 @@ def extract_doc(payload):
                             break
                         except UnicodeDecodeError:
                             pass
-    return text, images
+        # 样式记录: field2/field3 = 覆盖区间
+        d = {}
+        for f, v in parse_fields(r):
+            d.setdefault(f, v)
+        f2, f3, f7 = d.get(2), d.get(3), d.get(7)
+        if not (isinstance(f2, bytes) and isinstance(f3, bytes)
+                and isinstance(f7, bytes) and len(f2) > 1 and len(f3) > 1):
+            continue
+        s0, _ = read_varint(f2, 1)
+        e0, _ = read_varint(f3, 1)
+        if s0 is None or e0 is None or e0 <= s0 or e0 - s0 > 200:
+            continue
+        attr = {}
+        if re.search(rb"\xda\x03.\x08\x02", f7, re.S) or b"\x1a\x02\x08\x02" in f7:
+            attr["bold"] = True
+        cm = re.search(rb"\x5a\x08\x0a\x06([0-9A-Fa-f]{6})", f7)
+        if cm:
+            attr["mark"] = cm.group(1).decode()
+        tm = re.search(rb"(?:\xaa\x02\x0a\x0a|\xea\x02\x0a)\x08\x0a\x06([0-9A-Fa-f]{6})", f7)
+        if tm:
+            attr["color"] = tm.group(1).decode()
+        if attr:
+            styles.append((s0, e0, attr))
+    return text, images, styles
 
 
 # ---------------------------------------------------------------- 图片下载
@@ -246,28 +276,183 @@ def para_to_markdown(s):
     return s
 
 
-def build_lines(text, images, url_map):
-    """把全文文本按 \\r 拆行, 并在图片锚点处插入 Markdown 图片行。"""
-    imgs = sorted(
-        [(pos, url) for pos, url in images if url in url_map], key=lambda t: t[0])
-    out, buf = [], []
-    next_img = 0
-    for i, ch in enumerate(text):
-        while next_img < len(imgs) and imgs[next_img][0] <= i:
-            pos, url = imgs[next_img]
+DEFAULT_COLORS = {"000000", "333333"}  # 及 0000xx 自动色
+BOLD_RE = re.compile(rb"\xda\x03.\x08\x02", re.S)
+MARK_RE = re.compile(rb"\x5a\x08\x0a\x06([0-9A-Fa-f]{6})")
+COLOR_RE = re.compile(rb"(?:\xaa\x02\x0a\x0a|\xea\x02\x0a)\x08\x0a\x06([0-9A-Fa-f]{6})")
+
+
+def plain_text(line):
+    """去掉行内 Markdown/HTML 样式, 得到纯文本(用于板块标题匹配)"""
+    t = re.sub(r"</?(?:span|mark|strong|em)[^>]*>|</?mark[^>]*>", "", line)
+    t = t.replace("**", "")
+    import html as _h
+    return _h.unescape(t).strip()
+
+
+def esc(s):
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def render_line(seg_text, base, style_at):
+    """按字符样式渲染一行为 HTML/Markdown 混合文本"""
+    runs = []
+    cur_style, buf = None, []
+    for k, ch in enumerate(seg_text):
+        st = style_at(base + k)
+        if st != cur_style:
             if buf:
-                out.append("".join(buf))
-                buf = []
-            out.append(f"![](/images/{url_map[url]})")
-            next_img += 1
-        if ch == "\r":
-            out.append("".join(buf))
-            buf = []
+                runs.append((cur_style, "".join(buf)))
+            cur_style, buf = st, [ch]
         else:
             buf.append(ch)
     if buf:
-        out.append("".join(buf))
-    return [ln.strip() for ln in out if not is_junk(ln)]
+        runs.append((cur_style, "".join(buf)))
+    parts = []
+    for st, chunk in runs:
+        if not chunk:
+            continue
+        t = esc(chunk)
+        color, mark, bold = st
+        if color:
+            t = f'<span style="color:#{color}">{t}</span>'
+        if mark:
+            t = f"<mark>{t}</mark>"
+        if bold:
+            t = f"**{t}**"
+        parts.append(t)
+    return "".join(parts)
+
+
+def line_style_stats(s, e, style_at):
+    """行内可见字符的样式覆盖率: (bold_ratio, colored_ratio)"""
+    n = b = c = 0
+    for i in range(s, e):
+        st = style_at(i)
+        n += 1
+        b += 1 if st[2] else 0
+        c += 1 if st[0] else 0
+    if not n:
+        return 0.0, 0.0
+    return b / n, c / n
+
+
+HEADING_EXCLUDE = re.compile(r"^[-*•·—]")
+PARTICLE_END = ("哈", "哦", "吧", "呢", "啊", "呀", "啦", "嘛")
+# 含这些标点的行视为内容而非标题(Q&A/序号条目除外, 它们先行判定)
+CONTENT_PUNCT = "，。：；？！、~@—:"
+
+
+def heading_level(line, bold_ratio, colored_ratio):
+    """推断标题层级(2/3/4), 非标题返回 None。
+
+    原文档未使用 Word 标题样式, 层级由文本模式 + 加粗/着色推断:
+    - 二级: "关于X" / "X景区" 小节
+    - 三级: 01/02 步骤、Q&A 问题、简短加粗/着色行、固定小标题
+    - 四级: 中文序号条目(学习方法"一、二、…"等)
+    """
+    s = line.strip()
+    if len(s) < 2 or len(s) > 60 or HEADING_EXCLUDE.match(s):
+        return None
+    # Q&A 问题与数字步骤先判定(可能以 ？/。 结尾)
+    if re.match(r"^Q\d+[:：]", s) and len(s) <= 30:
+        return 3
+    if re.match(r"^0\d(\s|\s*$)", s):
+        return 3
+    if re.match(r"^[一二三四五六七八九十]+、", s):
+        return 4
+    # 内容性行: 含标点/日期/时间段
+    if any(c in s for c in CONTENT_PUNCT):
+        return None
+    if s.endswith(PARTICLE_END) or re.search(r"\d+月\d+日|\d+:\d+", s):
+        return None
+    fully_bold = bold_ratio >= 0.8
+    fully_colored = colored_ratio >= 0.8
+    # 二级: 关于X / X景区
+    if re.fullmatch(r"(关于|呼伦景区|如意景区|金川景区|二中传统).{0,14}", s):
+        return 2
+    # 三级: 校区小节 / 固定小标题 / 整行加粗或着色的短行
+    if s in ("呼伦", "如意", "金川", "呼伦/如意"):
+        return 3
+    if s in KNOWN_SUBHEADINGS:
+        return 3
+    if len(s) <= 16 and (fully_bold or fully_colored):
+        return 3
+    return None
+
+
+# 源文档中出现过的小标题用词(同步时按需补充)
+KNOWN_SUBHEADINGS = {
+    "菜单", "宿舍相关", "自习室相关", "作息时间表", "教材", "通用学习方法",
+    "学科学习方法", "夜自习管理", "间操", "活动课", "夜自习", "航拍影像及图书楼影像",
+    "更多Q&A", "欢迎补充", "高一", "高二", "高三", "恋爱相关", "头发相关",
+}
+
+
+def build_lines(text, images, url_map, styles):
+    """把全文文本按 \\r 拆行, 在图片锚点处插入图片, 应用行内样式并识别标题层级。
+    返回 [(line, level)] — level 为 0 表示正文。"""
+    imgs = sorted(
+        [(pos, url) for pos, url in images if url in url_map], key=lambda t: t[0])
+
+    # 按字符位置建立样式索引
+    def style_at(i):
+        color = mark = bold = None
+        for s0, e0, attr in styles:
+            if s0 <= i < e0:
+                c = attr.get("color")
+                if c and c.upper() not in DEFAULT_COLORS and not c.upper().startswith("0000"):
+                    color = c.lower()
+                if attr.get("mark"):
+                    mark = True
+                if attr.get("bold"):
+                    bold = True
+        return (color, mark, bold)
+
+    lines = []  # (start, end) 每 \r 一行
+    start = 0
+    for i, ch in enumerate(text):
+        if ch == "\r":
+            lines.append((start, i))
+            start = i + 1
+    lines.append((start, len(text)))
+
+    out = []
+    for li, (s, e) in enumerate(lines):
+        # 该行前的图片锚点
+        for pos, url in imgs:
+            if s <= pos < e or (li + 1 < len(lines) and pos == e):
+                out.append((f"![](/images/{url_map[url]})", 0))
+        seg = text[s:e]
+        visible = [k for k, ch in enumerate(seg)
+                   if ch.isprintable() and ch not in "\x08\x0c"]
+        if not visible:
+            continue
+        plain = "".join(seg[k] for k in visible).strip()
+        if is_junk(plain):
+            continue
+        bold_n = color_n = 0
+        for k in visible:
+            st = style_at(s + k)
+            bold_n += 1 if st[2] else 0
+            color_n += 1 if st[0] else 0
+        bold_ratio = bold_n / len(visible)
+        color_ratio = color_n / len(visible)
+        lvl = heading_level(plain, bold_ratio, color_ratio)
+        if lvl:
+            out.append((plain, lvl))
+        else:
+            rendered = render_line(seg, s, style_at)
+            rendered = rendered.strip()
+            if rendered and not is_junk(re.sub(r"<[^>]+>", "", rendered)):
+                out.append((rendered, 0))
+    # "加粗标签 + 配图"的设施清单: 标题后紧跟图片则降为四级(图注性质)
+    campus = {"呼伦", "如意", "金川", "呼伦/如意"}
+    for i, (ln, lvl) in enumerate(out):
+        if (lvl == 3 and ln not in campus
+                and i + 1 < len(out) and out[i + 1][0].startswith("![]")):
+            out[i] = (ln, 4)
+    return out
 
 
 # ---------------------------------------------------------------- 主流程
@@ -286,11 +471,11 @@ def json_loads(s):
 def main():
     dry = "--dry-run" in sys.argv
     payload = fetch_json()
-    text, images = extract_doc(payload)
+    text, images, styles = extract_doc(payload)
     if not text:
         print("✗ 未能解析文档正文")
         sys.exit(1)
-    print(f"正文 {len(text)} 字符, {len(images)} 张图片")
+    print(f"正文 {len(text)} 字符, {len(images)} 张图片, {len(styles)} 条样式记录")
 
     if dry:
         for pos, url in sorted(images)[:5]:
@@ -298,28 +483,27 @@ def main():
         return
 
     if "--no-img" in sys.argv:
-        url_map = {url: "" for _, url in images}
-        paras = build_lines(text, [], {})
-        img_count = 0
+        url_map = {}
+        paras = build_lines(text, [], {}, styles)
     else:
         print("下载图片…")
         url_map = download_images(images)
-        paras = build_lines(text, images, url_map)
-        img_count = sum(1 for p in paras if p.startswith("![]"))
-        print(f"图片下载完成: {len(url_map)} 张, 嵌入 {img_count} 张")
+        paras = build_lines(text, images, url_map, styles)
+        print(f"图片下载完成: {len(url_map)} 张")
     print(f"解析到 {len(paras)} 个有效段落")
 
     # 文档尾部是导入 Word 时残留的样式表/设置 XML(纯 ASCII)。
     # 找到连续 12 行不含中文的位置, 视为正文结束。
     for i in range(len(paras) - 12):
-        if all(not re.search(r"[\u4e00-\u9fff]", p) for p in paras[i:i + 12]):
+        if all(not re.search(r"[\u4e00-\u9fff]", p) for p, _ in paras[i:i + 12]):
             print(f"正文结束于第 {i} 段(其后为导入残留, 共略去 {len(paras) - i} 段)")
             paras = paras[:i]
             break
 
     bounds = []
     for sec in SECTIONS:
-        start = next((i for i, p in enumerate(paras) if p in sec["headings"]), None)
+        start = next((i for i, (p, _) in enumerate(paras)
+                      if plain_text(p) in sec["headings"]), None)
         if start is None:
             print(f"⚠ 未找到板块标题: {sec['title']}")
             continue
@@ -341,12 +525,12 @@ def main():
             + "> 本页面由[源文档](https://docs.qq.com/doc/%s)自动同步生成，"
               "如内容有出入请以源文档为准。\n\n" % DOC_ID
         ]
-        for p in sec["body"]:
+        for p, lvl in sec["body"]:
             if p.startswith("![]"):
                 lines.append(p + "\n")
                 continue
-            if p.startswith("关于") and len(p) <= 16:
-                lines.append(f"\n## {p}\n")
+            if lvl >= 2:
+                lines.append(f"\n{'#' * lvl} {p}\n")
                 continue
             md = para_to_markdown(p)
             if md:
@@ -364,7 +548,8 @@ def main():
     # 留言处导出为 JSON, 供前端与 Waline 评论并排展示
     msg_sec = next((s for _, s in bounds if s["title"] == "留言处"), None)
     if msg_sec:
-        messages = [p for p in msg_sec["body"] if len(p) > 1 and not p.startswith("![")]
+        messages = [p for p, _ in msg_sec["body"]
+                    if len(p) > 1 and not p.startswith("![")]
         MESSAGES_JSON.parent.mkdir(parents=True, exist_ok=True)
         MESSAGES_JSON.write_text(
             json_dumps({"source": "docs.qq.com/doc/" + DOC_ID, "messages": messages}),
