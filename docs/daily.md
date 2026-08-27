@@ -12,7 +12,11 @@ title: 日常生活
 
 呼伦/如意
 
+![](/images/48f8d001d796d2b7.jpg)
+
 金川
+
+![](/images/49cc54c19dd1088d.jpg)
 
 金川校区课间操时间为社团活动时间
 
@@ -58,48 +62,94 @@ title: 日常生活
 
 夜自习管理
 
+![](/images/ee17e30433323ebc.jpg)
+
 
 ## 关于基础设施
 
 呼伦
 
+![](/images/82e8a31d5c365482.jpg)
+
+![](/images/d0ebc8e1facf70fd.jpg)
+
 班级有风扇（仅旧楼高三）均使用新桌椅
 
 A座教室(本图摄于2022年9月3日)
 
+![](/images/d283beaf6dd4eb90.jpg)
+
 C座教室
+
+![](/images/f4e5f22cf2d19af8.jpg)
 
 共同课教室（有风扇）
 
+![](/images/77452de79f2830cd.jpg)
+
 图书馆无空调
+
+![](/images/56e14bf38aab9ca4.jpg)
+
+![](/images/26ae30b106ba56c1.jpg)
 
 A座4楼配备公用电脑
 
+![](/images/55ff7b8ab835355d.jpg)
+
 实验楼（含艺术楼）
+
+![](/images/5634691eeded80a8.jpg)
 
 乒乓球室
 
+![](/images/0ffe8c0b85a2e8f4.jpg)
+
+![](/images/d3694c10b03231f1.jpg)
+
 二层食堂
+
+![](/images/29d26a04db239b0e.jpg)
+
+![](/images/aab523d45eb44894.jpg)
 
 无宿舍楼
 
 如意
 
+![](/images/5938ff2b514e1aea.jpg)
+
 班级无风扇
 
 旧教学楼使用旧桌椅（高一高二） 新教学楼使用新桌椅（高三）
 
+![](/images/60968c005c679324.jpg)
+
 图书馆有空调 配备公用电脑（拆了）（因为我们班之前有个人老逃课去看）
+
+![](/images/b1db471a079c3ec6.jpg)
+
+![](/images/99a82331d713ca1a.jpg)
 
 篮球馆
 
+![](/images/bb55dca1be104922.jpg)
+
 乒乓球室
+
+![](/images/bb1deee8e70c780d.jpg)
 
 千人报告厅
 
+![](/images/fa90cb885d7ec1eb.jpg)
+
 大型报告厅
 
+![](/images/dabe2368e97b3a98.jpg)
+
 艺术楼
+
+![](/images/e20eae240cb90a55.jpg)
 
 实验楼
 
@@ -109,31 +159,81 @@ A座4楼配备公用电脑
 
 图源：怀绪
 
+![](/images/375f1603057be843.jpg)
+
+![](/images/790033b0fd79aded.jpg)
+
 金川
+
+![](/images/338c750e50dcafaf.jpg)
 
 班级无风扇 全部使用新桌椅
 
+![](/images/c392e7818a7f0e15.jpg)
+
+![](/images/4e8ce4a42aa14e72.jpg)
+
+![](/images/dc13bb0564d4cd9c.jpg)
+
 师生服务中心
+
+![](/images/326de1524226bc88.jpg)
 
 图书馆预计九月开放已投入使用
 
+![](/images/5a568336e93400ca.jpg)
+
+![](/images/71d22dfa6d1cd3f9.jpg)
+
 篮球馆
+
+![](/images/5b66128258dd9947.jpg)
 
 羽毛球馆
 
+![](/images/5ac52635d624aef1.jpg)
+
 健身房
 
+![](/images/dd5eda093830a527.jpg)
+
 乒乓球室
+
+![](/images/610d7fe66451d4b0.jpg)
 
 艺术楼预计九月开放已投入使用
 
 实验楼预计九月开放已投入使用
 
+![](/images/6073c79910d00f9b.jpg)
+
 大型报告厅4个
+
+![](/images/bd3c8e1a32138b25.jpg)
+
+![](/images/4c384b995339f6d7.jpg)
+
+![](/images/9f43be125bf267f6.jpg)
 
 三层食堂
 
+![](/images/60970aadd2b71fa4.jpg)
+
+![](/images/cdde9990bf538fd7.jpg)
+
 男女宿舍楼（独立卫生间，上床下桌，配备有电话）
+
+![](/images/2819ea4b69aafe0b.jpg)
+
+![](/images/4890669835f127c8.jpg)
+
+![](/images/524e8835228edc90.jpg)
+
+![](/images/4ba7467b76e80b9f.jpg)
+
+![](/images/98b1ba6a0f306e8a.jpg)
+
+![](/images/601484675f8a2256.jpg)
 
 
 ## 关于活动
@@ -148,23 +248,39 @@ A座4楼配备公用电脑
 
 研学地点：蒙草蒙牛伊利昭君墓将军衙署博物馆农业基地
 
+![](/images/619b85c6d92d0245.jpg)
+
 假期研学（火箭班优先）
 
 研学地点：北京上海（理） 西安延安（文）
 
+![](/images/edfe6cfdbd632693.jpg)
+
 万米接力
+
+![](/images/bb9a605897ea032b.jpg)
 
 科技节
 
+![](/images/76e9ea3f6fb3a53d.jpg)
+
 模拟联合国
+
+![](/images/1bc45a3ebec1270f.jpg)
 
 心理健康月
 
+![](/images/cddaf468ea028d8f.jpg)
+
 美育节
+
+![](/images/203aa94eda5dbd99.jpg)
 
 小型活动和比赛由各个学科组安排，这里不做说明
 
 模拟联合国相关经验 图源：未知作者，待后续补充
+
+![](/images/f07bfb7aca2d3317.jpg)
 
 
 ## 关于素质课程
@@ -196,17 +312,33 @@ A座4楼配备公用电脑
 
 如图为呼伦加了牛肉的牛肉面（大约要了十块钱的牛肉吧）
 
+![](/images/618db2c6355bf9bb.jpg)
+
 不得不说，酱牛肉的价格稍低于市场价，还是比较优惠的。
 
 呼伦食堂（拍摄于一楼）
 
 菜单
 
+![](/images/05ed4fa9718b7301.jpg)
+
+![](/images/0ae7d2f07a568879.jpg)
+
 金川食堂
+
+![](/images/be85b238699fff31.jpg)
 
 bu
 
 菜单图源及文字：水曜日限定🥞
+
+![](/images/2fc31e5198199bbf.jpg)
+
+![](/images/a23b53542a7727f6.jpg)
+
+![](/images/c574890b3131d6bc.jpg)
+
+![](/images/634065e3d2a9d38c.jpg)
 
 金川食堂总体可以有时候会有些油但是菜式挺多可以自己搭配一楼是素菜5块肉菜8块特色窗口12/15二楼是自助餐15块入场费
 
@@ -225,7 +357,15 @@ bu
 
 图源：怀绪
 
+![](/images/615d56ec0d603e38.jpg)
+
+![](/images/c0e79c9d1ffaaaf9.jpg)
+
 金川校区：四人间 上床下桌 两个洗漱台两个厕所 还有插座 上床的楼梯有储物柜 早6:00起床6:20之前出楼 中午12:50熄灯 13:50起床 晚23:00熄灯。所有学生必须住宿。宿舍按你刚开学后的那个班级分，之后不会再分宿舍。宿舍可以挂海报。不允许使用床帘，宿管在无人时概率会进宿舍检查
+
+![](/images/d85b4cbd92d5d48d.jpg)
+
+![](/images/8bb1d5452025d437.jpg)
 
 
 ## 关于娱乐
@@ -233,6 +373,8 @@ bu
 学校的大屏玩游戏看视频听音乐是没人管的（有的班班主任会管）（中午听音乐声音过大会引来老师，可能被批评）
 
 拍摄于如意
+
+![](/images/e1e67abcb48ac17b.jpg)
 
 给大屏换个壁纸
 
@@ -250,9 +392,17 @@ bu
 
 小考试随便写，老师不会打你
 
+![](/images/b265f385bca9d9f9.jpg)
+
 期末考试完基本就不管了，图片摄于期末考试讲评阶段
 
+![](/images/0b15bb0d6bfe8fff.jpg)
+
 吃火锅 图源：我高二了？
+
+![](/images/b741594d00644b9c.jpg)
+
+![](/images/ee0c907b0418b7a0.jpg)
 
 
 ## 关于找对象
@@ -328,27 +478,53 @@ bu
 
 图源：AA小濛
 
+![](/images/d6ea0d9ce70f971f.jpg)
+
 呼伦学生会
+
+![](/images/11c6f2866db71858.jpg)
+
+![](/images/9d84917ed5e9ad00.jpg)
 
 图源：AA小濛
 
+![](/images/85ccda47e8de2ca9.jpg)
+
 如意学生会
+
+![](/images/640218236dfccc30.jpg)
+
+![](/images/3189a130cc316f46.jpg)
 
 播音站
 
 图源：Sheeeep.
 
+![](/images/f22f721794dcab98.jpg)
+
+![](/images/035cc2c4eead78bb.jpg)
+
+![](/images/da5ec93c79cc6dc1.jpg)
+
 国旗班
 
 图源：子弹
+
+![](/images/a7afbff38a55893f.jpg)
 
 社团相关
 
 呼伦校区社团
 
+![](/images/c97300dc8d1e66ff.jpg)
+
 如意校区社团
 
+![](/images/599a066dad6d479f.jpg)
+
 金川校区社团
+
+![](/images/3fb1080f73936df4.jpg)
 
 日常学习政策及环境
 
@@ -406,6 +582,14 @@ bu
 高一高二高三会进行体测，每次体测总成绩达到及格线（60/100分）即可拿到体育白卡，不及格需要在高考完后补测（毕业时一定要记得去找老师拿白卡）
 
 以下是体测项目及标准
+
+![](/images/14ece6a5242a1af2.jpg)
+
+![](/images/accf4f8a14bf3226.jpg)
+
+![](/images/05e82a27407a602b.jpg)
+
+![](/images/abe0baaf1788ce74.jpg)
 
 
 ## 关于上课地点
@@ -509,7 +693,11 @@ E座 实验课，音乐课，美术课，信息课
 
 放一张被ban掉的签名墙
 
+![](/images/19f07ba693a7de9e.jpg)
+
 金川采取人性化管理，领导层：何万立，陈峰
+
+![](/images/113a8dcab51dfee4.jpg)
 
 金川校区情况
 

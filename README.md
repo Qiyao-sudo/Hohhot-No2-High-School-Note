@@ -5,7 +5,7 @@
 - **框架**：[VitePress](https://vitepress.dev/) 生成静态站点
 - **评论**：[Waline](https://waline.js.org) 匿名模式（昵称必填、邮箱可选、免登录）
 - **部署**：后端 + 数据库免费部署在 Vercel / LeanCloud，站点托管在 GitHub Pages
-- **同步**：源文档 → 网站自动同步（GitHub Actions 定时 + 手动触发）
+- **同步**：源文档 → 网站自动同步（GitHub Actions 定时 + 手动触发），**含正文全部图片**（138 张，自动下载压缩到 `docs/public/images/` 并按原始位置嵌入）
 
 ## 目录结构
 
@@ -64,7 +64,9 @@ WALINE_SERVERURL=https://<你的waline>.vercel.app npm run build
 
 ## 已知限制
 
-- 源文档中的**图片/音频附件**无法匿名下载，页面中以“📎 附件占位”标注并
-  链回原文档查看。
+- 源文档中的**图片**已支持自动抓取嵌入（protobuf 解析图片锚点位置 + docimg
+  CDN 下载，本地用 Pillow 压缩到宽 1000px，约 19MB）；**音频附件**无法匿名
+  下载，以“📎 附件占位”标注并链回原文档。
 - 源文档的复杂表格、加粗等富文本样式在转换后会退化为纯文本段落。
 - 腾讯文档使用内部接口，若其结构变更需同步更新 `scripts/sync_doc.py`。
+- 音频等附件的引用链接在页面中保留为指向原文档的占位提示。
