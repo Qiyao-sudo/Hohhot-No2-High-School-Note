@@ -53,8 +53,7 @@ const groups = [
         </div>
       </div>
       <figure class="home-hero-figure">
-        <img :src="withBase('/images/3b8a65e974015313.jpg')" alt="呼市二中校园航拍" />
-        <figcaption>校园航拍 · 图源：那弘泽</figcaption>
+        <img :src="withBase('/images/hero.jpg')" alt="呼市二中校园" />
       </figure>
     </section>
 
