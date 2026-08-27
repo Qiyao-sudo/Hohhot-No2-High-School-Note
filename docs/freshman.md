@@ -148,3 +148,5 @@ title: 新生须知
 [呼和浩特市第二中学校校服订购指南 2023年10月7日](https://docs.qq.com/pdf/DYk1rYVRicXN6S1pI)
 
 [呼和浩特市第二中学校校服订购指南 24.8.19](https://docs.qq.com/pdf/DYkZwcFJvZk1sSHpW)
+
+> <mark>根据学生<strong><span style="color:#326fba">反应，2026级新生校服质量特别差，新生也可在卡帕小程序上购买由卡帕生产的校服</span></strong></mark>

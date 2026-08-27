@@ -61,6 +61,12 @@ PAGES = [
 # 过小的板块并入前一页(避免单行页面)
 MERGE_INTO_PREV = {"更多Q&A": "messages.md"}
 
+# 浮动文本框重定位: 源文档中的"高亮框"是浮动对象, 在文本流中位于文档末尾,
+# 实际显示在锚点行下方。规则: (浮动行开头文本, 锚点行包含文本)。
+FLOATING_RULES = [
+    ("根据学生反应", "校服订购指南"),
+]
+
 OUTLINE_FILE = Path(__file__).resolve().parent / "outline.json"
 
 
@@ -423,6 +429,7 @@ def build_lines(text, images, url_map, styles, level_map):
     lines.append((start, len(text)))
 
     out = []
+    floating = []
     for li, (s, e) in enumerate(lines):
         # 该行前的图片锚点
         for pos, url in imgs:
@@ -435,6 +442,11 @@ def build_lines(text, images, url_map, styles, level_map):
             continue
         plain = "".join(seg[k] for k in visible).strip()
         if is_junk(plain):
+            continue
+        # 浮动文本框(\x0f 开头): 暂存, 按规则重定位到锚点行之后
+        if "\x0f" in seg:
+            rendered = render_line(seg, s, style_at).strip()
+            floating.append((plain, rendered))
             continue
         lvl = heading_level(plain, level_map)
         if lvl and lvl <= 1:
@@ -452,6 +464,21 @@ def build_lines(text, images, url_map, styles, level_map):
             rendered = rendered.strip()
             if rendered and not is_junk(re.sub(r"<[^>]+>", "", rendered)):
                 out.append((rendered, 0))
+
+    # 浮动文本框重定位: 插入到锚点行(最后一个匹配行)之后, 渲染为高亮提示
+    for plain, rendered in floating:
+        rule = next((r for r in FLOATING_RULES if plain.startswith(r[0])), None)
+        # <mark> 内的 Markdown 强调不会被解析, 转为 HTML <strong>
+        rendered = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", rendered)
+        box = f"> <mark>{rendered}</mark>"
+        if rule is None:
+            out.append((box, 0))
+            continue
+        anchor_idx = [i for i, (ln, _) in enumerate(out) if rule[1] in ln]
+        if anchor_idx:
+            out.insert(anchor_idx[-1] + 1, (box, 0))
+        else:
+            out.append((box, 0))
     return out
 
 
