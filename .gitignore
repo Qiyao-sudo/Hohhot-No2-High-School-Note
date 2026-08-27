@@ -1,0 +1,7 @@
+node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+.tmp/
+__pycache__/
+*.log
+.DS_Store

@@ -1,0 +1,72 @@
+name: Sync & Deploy
+
+# 自动: 每天凌晨 3 点同步源文档并部署; 推送 main 分支时重新构建部署
+# 手动: 在仓库 Actions 页面选择 "Sync & Deploy" 点击 Run workflow
+on:
+  schedule:
+    - cron: '0 19 * * *' # UTC 19:00 = 北京时间次日 3:00
+  push:
+    branches: [main]
+  workflow_dispatch: # 支持手动触发同步
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  sync-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Sync from Tencent Doc (source document)
+        run: python scripts/sync_doc.py
+
+      - name: Commit synced content (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if git diff --cached --quiet; then
+            echo "No document changes."
+          else
+            git commit -m "docs: sync from Tencent doc $(date +'%Y-%m-%d %H:%M') [skip ci]"
+            git push
+          fi
+
+      - run: npm ci
+      - run: npm run build
+        env:
+          # Waline 服务端地址(在仓库 Settings → Secrets → Actions 配置)
+          WALINE_SERVERURL: ${{ secrets.WALINE_SERVERURL }}
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  deploy:
+    needs: sync-and-build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
