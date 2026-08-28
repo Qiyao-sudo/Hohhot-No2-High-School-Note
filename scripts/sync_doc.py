@@ -528,9 +528,19 @@ def build_lines(text, images, url_map, styles, level_map):
 # ---------------------------------------------------------------- 主流程
 
 def fetch_json():
-    req = urllib.request.Request(API, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return json_loads(resp.read().decode("utf-8"))
+    # CI 上访问 docs.qq.com 偶发超时/被限流, 带退避重试
+    import time
+    last = None
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(API, headers=HEADERS)
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                return json_loads(resp.read().decode("utf-8"))
+        except Exception as exc:
+            last = exc
+            print(f"⚠ 抓取失败(第 {attempt + 1}/3 次): {exc}")
+            time.sleep(5 * (attempt + 1))
+    sys.exit(f"✗ 腾讯文档抓取失败: {last}")
 
 
 def json_loads(s):
