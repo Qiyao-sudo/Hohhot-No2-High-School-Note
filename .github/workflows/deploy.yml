@@ -60,6 +60,9 @@ jobs:
           WALINE_SERVERURL: ${{ secrets.WALINE_SERVERURL }}
 
       - uses: actions/configure-pages@v5
+        with:
+          # Pages 未开启时自动启用(Source = GitHub Actions), 免手动设置
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/.vitepress/dist
