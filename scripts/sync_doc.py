@@ -54,7 +54,7 @@ PAGES = [
     {"file": "jinchuan.md", "title": "金川校区情况"},
     {"file": "tradition.md", "title": "二中传统"},
     {"file": "study.md", "title": "学习板块"},
-    {"file": "messages.md", "title": "留言处", "comment": True},
+    {"file": "messages.md", "title": "留言处"},
     {"file": "afterword.md", "title": "后记"},
 ]
 
@@ -624,6 +624,8 @@ def main():
             md = para_to_markdown(p)
             if md:
                 lines.append(md + "\n")
+        # 评论功能暂时下线(恢复: 给留言处页加 "comment": True 并还原
+        # Layout.vue 中的 WalineComment 挂载, 见 docs/waline-setup.md)
         if page.get("comment"):
             lines.append(
                 "\n---\n\n## 网站留言区\n\n"

@@ -54,10 +54,8 @@ export default defineConfig({
           { text: '后记', link: '/afterword' },
         ],
       },
-      {
-        text: '站点',
-        items: [{ text: '评论后端部署', link: '/waline-setup' }],
-      },
+      // 评论功能暂时下线; 恢复时加回:
+      // { text: '站点', items: [{ text: '评论后端部署', link: '/waline-setup' }] },
     ],
     outline: { level: [2, 3] },
     docFooter: { prev: '上一页', next: '下一页' },
