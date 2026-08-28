@@ -64,7 +64,7 @@ WALINE_SERVERURL=https://<你的waline>.vercel.app npm run build
 | 方向 | 方式 | 说明 |
 | --- | --- | --- |
 | 源文档 → 网站 | 自动（每日）/ 手动（workflow_dispatch） | `sync_doc.py` 抓取腾讯文档正文并生成各页面 |
-| 网站留言 → 源文档 | 暂停（评论功能下线） | 恢复评论后：从 Waline 后台（`<serverURL>/ui`）导出留言，粘贴回源文档“留言处” |
+| 网站留言 → 源文档 | 手动整理 | 维护者从 Waline 后台（`<serverURL>/ui`）导出留言，粘贴回源文档“留言处” |
 
 腾讯文档没有公开写入 API，所以“网站 → 源文档”方向为半自动（导出+粘贴）；
 源文档“留言处”板块内容会完整同步到网站的[留言页](docs/messages.md)并与 Waline

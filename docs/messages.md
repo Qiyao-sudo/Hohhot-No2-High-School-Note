@@ -1,5 +1,6 @@
 ---
 title: 留言处
+comment: true
 ---
 
 # 留言处
@@ -120,3 +121,10 @@ title: 留言处
 详见小<strong>红书评论区</strong>
 
 <strong>呼市二</strong>中学习生活指导 http://xhslink.cn/o/ARTE318qdUT 存好这段口令，去【小红书】查看原文~
+
+
+---
+
+## 网站留言区
+
+上方为[源文档留言处](https://docs.qq.com/doc/DYm5PeUxOVmdEZmxs)的同步内容，下方为本站评论区。网站留言会定期由维护者整理回源文档留言区。
