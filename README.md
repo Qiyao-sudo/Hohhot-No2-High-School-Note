@@ -20,7 +20,8 @@
 │   ├── sync_doc.py          # 腾讯文档抓取 → Markdown 转换
 │   └── outline.json         # 源文档真实标题大纲(层级权威来源)
 ├── .github/workflows/
-│   └── deploy.yml           # 定时/手动同步 + 构建部署 GitHub Pages
+│   ├── deploy.yml           # 定时/推送/手动: 同步 + 构建部署 GitHub Pages
+│   └── manual-sync.yml      # 纯手动: 只同步源文档并提交(推送后自动触发部署)
 └── docs/waline-setup.md     # Waline 后端部署指南(Vercel + LeanCloud)
 ```
 
@@ -48,6 +49,12 @@ WALINE_SERVERURL=https://<你的waline>.vercel.app npm run build
 4. **配置 Secret**：仓库 Settings → Secrets and variables → Actions 添加
    `WALINE_SERVERURL = https://<你的waline>.vercel.app`。
 5. **触发部署**：Actions 页面手动运行 `Sync & Deploy`，或直接 push 代码。
+
+## 手动同步源文档
+
+源文档更新后想立即同步（不等每日定时）：仓库 **Actions → Manual Sync → Run workflow**。
+该工作流只抓取源文档并提交推送；推送 `main` 会自动触发 `Sync & Deploy` 重建部署站点。
+无内容变化时不产生提交，也不会触发部署。
 
 > 若仓库不是 `<user>.github.io`，`docs/.vitepress/config.ts` 中的 `BASE`
 > 需与仓库名一致（默认 `/Hohhot-No2-High-School-Note/`）。

@@ -35,6 +35,9 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install Pillow (图片压缩)
+        run: pip install pillow
+
       - name: Sync from Tencent Doc (source document)
         run: python scripts/sync_doc.py
 

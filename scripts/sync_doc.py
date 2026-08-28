@@ -209,6 +209,11 @@ def extract_doc(payload):
         e0, _ = read_varint(f3, 1)
         if s0 is None or e0 is None or e0 <= s0 or e0 - s0 > 200:
             continue
+        # f2/f3 的区间相对真实字符位置整体右移一格:
+        # 对照腾讯文档发布页实测(如"政策每年在变化"整行含首字被高亮、
+        # "金川不允许携带手机"9字为红), 真实区间为 [s-1, e-1)。
+        # 这样单字符样式记录恰好落在行尾 \r 上(不可见), 与原文渲染一致。
+        s0, e0 = max(s0 - 1, 0), e0 - 1
         attr = {}
         if re.search(rb"\xda\x03.\x08\x02", f7, re.S) or b"\x1a\x02\x08\x02" in f7:
             attr["bold"] = True
@@ -402,7 +407,7 @@ def render_line(seg_text, base, style_at):
         t = esc(chunk)
         # 源文档部分段落本身用 Markdown 语法书写(如 "**理解基础概念**"),
         # 转义后还原为真正的加粗
-        t = re.sub(r"&#42;&#42;(.+?)&#42;&#42;", r"<strong></strong>", t)
+        t = re.sub(r"&#42;&#42;(.+?)&#42;&#42;", r"<strong>\g<1></strong>", t)
         color, mark, bold = st if st else (None, None, None)
         inner = t
         if color:

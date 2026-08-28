@@ -1,0 +1,47 @@
+name: Manual Sync
+
+# 手动同步源文档(不构建部署):
+# 仓库 Actions → Manual Sync → Run workflow
+# 同步腾讯文档并提交推送; 推送 main 会自动触发 Sync & Deploy 重建部署站点。
+# 若无内容变化则不产生提交(也不会触发部署)。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: doc-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow (图片压缩)
+        run: pip install pillow
+
+      - name: Sync from Tencent Doc (源文档)
+        run: python scripts/sync_doc.py
+
+      - name: Commit and push (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if git diff --cached --quiet; then
+            echo "### 源文档无变化" >> "$GITHUB_STEP_SUMMARY"
+          else
+            git diff --cached --stat >> "$GITHUB_STEP_SUMMARY"
+            git commit -m "docs: manual sync from Tencent doc $(date +'%Y-%m-%d %H:%M')"
+            git push
+            echo "### 已同步并推送, 站点将自动重新部署" >> "$GITHUB_STEP_SUMMARY"
+          fi
