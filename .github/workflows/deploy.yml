@@ -59,27 +59,10 @@ jobs:
           # Waline 服务端地址(在仓库 Settings → Secrets → Actions 配置)
           WALINE_SERVERURL: ${{ secrets.WALINE_SERVERURL }}
 
-      # Pages 未开启时先创建站点(Source=GitHub Actions), 并在失败时暴露 API 原始报错
-      - name: Ensure Pages enabled (GitHub Actions source)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          REPO="${GITHUB_REPOSITORY}"
-          if gh api "repos/$REPO/pages" --silent 2>/dev/null; then
-            echo "Pages 站点已存在"
-            gh api "repos/$REPO/pages" -q '.build_type + " / " + .source.branch' || true
-          else
-            echo "Pages 站点不存在, 尝试创建 (build_type=workflow)…"
-            gh api --method POST "repos/$REPO/pages" \
-              -f build_type=workflow \
-              -f "source[branch]=main" -f "source[path]=/" || true
-            echo "--- 创建后的状态 ---"
-            gh api "repos/$REPO/pages" || true
-          fi
-
       - uses: actions/configure-pages@v5
         with:
-          # Pages 未开启时自动启用(Source = GitHub Actions), 免手动设置
+          # 若仓库已开启 Pages 则直接生效; 注意: 首次开启 Pages 需管理员在
+          # 仓库 Settings → Pages 手动选择 Source=GitHub Actions(CI 令牌无权创建站点)
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
