@@ -10,6 +10,8 @@ title: 日常生活
 
 ### 关于作息
 
+[https://docs.qq.com/sheet/DYkx6ZHFFZm9Td2VG](https://docs.qq.com/sheet/DYkx6ZHFFZm9Td2VG)
+
 <strong>呼伦/如意</strong>
 
 ![](/images/48f8d001d796d2b7.jpg)
@@ -451,6 +453,8 @@ bu
 <strong>学校内可以存放自行车</strong>
 
 呼伦高一高二会有地下车库，高三在外面，也可以去别的年级随便停，不要干扰其他年级正常停车就可以了，不然会被友好的同学拖走。（教师停车区看情况也可以随便停，甚至还可以给电动车充电）
+
+![](/images/3a052a5f24c13f00.jpg)
 
 如意每栋楼都有地下车库，停自己教室所在的楼宇下面里面即可（夜自习需推出，不然车就被锁里边了）
 
