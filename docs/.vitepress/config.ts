@@ -1,7 +1,14 @@
 import { defineConfig } from 'vitepress'
 
-// GitHub Pages 仓库名, 如 <user>.github.io 仓库请改为 '/'
-const BASE = process.env.BASE || '/Hohhot-No2-High-School-Note/'
+// 站点根路径:
+// - GitHub Pages 挂在仓库子路径 /Hohhot-No2-High-School-Note/
+// - Vercel/Netlify/Cloudflare Pages 部署在根路径 '/'(这些平台会注入对应环境变量,
+//   导入仓库即可自动适配, 无需手工配置 BASE)
+const BASE =
+  process.env.BASE ||
+  (process.env.VERCEL || process.env.NETLIFY || process.env.CF_PAGES
+    ? '/'
+    : '/Hohhot-No2-High-School-Note/')
 
 // Waline 服务端地址(Vercel 部署后填入), 也可通过环境变量注入
 const WALINE_SERVERURL =

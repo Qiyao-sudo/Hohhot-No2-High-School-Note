@@ -56,6 +56,21 @@ WALINE_SERVERURL=https://<你的waline>.vercel.app npm run build
 该工作流只抓取源文档并提交推送；推送 `main` 会自动触发 `Sync & Deploy` 重建部署站点。
 无内容变化时不产生提交，也不会触发部署。
 
+## 国内访问镜像（Vercel）
+
+GitHub Pages 的 `*.github.io` 域名在国内访问较慢。推荐在
+[Vercel](https://vercel.com) 加一个免费镜像（同一份代码，部署在根路径，
+`config.ts` 会通过平台环境变量自动切换 base，无需任何改动）：
+
+1. 用 GitHub 账号登录 Vercel → **Add New Project** → 导入本仓库；
+2. 框架已自动识别（根目录 `vercel.json`），直接 **Deploy**；
+3. 得到 `https://<项目名>.vercel.app` 镜像地址，国内访问通常明显快于 github.io；
+4. 若有 Waline 后端：在 Vercel 项目 **Settings → Environment Variables**
+   添加 `WALINE_SERVERURL`（与 GitHub Actions Secret 相同值）。
+
+> 两个部署源独立触发：GitHub Actions 推送到 Pages，Vercel 监听 main 分支自动构建。
+> 有自定义域名时，可在任一平台绑定域名获得最佳国内速度。
+
 > 若仓库不是 `<user>.github.io`，`docs/.vitepress/config.ts` 中的 `BASE`
 > 需与仓库名一致（默认 `/Hohhot-No2-High-School-Note/`）。
 
