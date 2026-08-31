@@ -170,12 +170,44 @@ def extract_doc(payload):
     - 文字颜色: f201 载荷中 field37/field53, 形如 "\\x0a\\x08\\x0a\\x06<6hex>"
     - 高亮背景: field59 中 "\\x5a\\x08\\x0a\\x06<6hex>"
     - 加粗: field59 "\\xda\\x03..\\x08\\x02" 或 field3 "\\x1a\\x02\\x08\\x02"
+
+    坐标系: 记录中的位置(field2/field3)按 UTF-16 码元计 —— 星面字符(emoji)
+    占 2 个码元, 而 Python 字符串占 1 个。需按 emoji 出现位置把记录坐标
+    映射回 Python 下标, 否则 emoji 之后的样式/图片锚点会整体右移
+    (每跨过一个 emoji 偏移 +1)。已由文档维护者对照源文档逐字确认。
     """
     b64 = payload["clientVars"]["collab_client_vars"]["initialAttributedText"]["text"][0]
     raw = base64.b64decode(b64 + "=" * (-len(b64) % 4))
     records = [v for f, v in parse_fields(parse_fields(raw)[0][1])
                if f == 2 and isinstance(v, bytes)]
-    text, images, styles = None, [], []
+
+    # 先提取全文文本, 再建立 UTF-16 码元 -> Python 下标的映射表
+    text = None
+    for r in records:
+        for f, v in parse_fields(r):
+            if f == 6 and len(v) > 1000:
+                sub = parse_fields(v)
+                if sub and isinstance(sub[0][1], bytes):
+                    try:
+                        text = sub[0][1].decode("utf-8")
+                        break
+                    except UnicodeDecodeError:
+                        pass
+        if text is not None:
+            break
+    if text is None:
+        return None, [], []
+
+    qq_to_py = []  # qq_to_py[u] = 该 UTF-16 码元所属字符的 Python 下标
+    for i, ch in enumerate(text):
+        qq_to_py.append(i)
+        if ord(ch) > 0xFFFF:  # 星面字符: 低位代理映射到同一字符
+            qq_to_py.append(i)
+
+    def to_py(q):
+        return qq_to_py[q] if q < len(qq_to_py) else len(text)
+
+    images, styles = [], []
     for r in records:
         if b"docimg" in r:
             d = {}
@@ -185,18 +217,8 @@ def extract_doc(payload):
             pos, _ = read_varint(d[2], 1)
             m = re.search(rb"https://docimg[^\x00\x1a\x22*]+", d[7])
             if m:
-                images.append((pos, m.group().decode(errors="ignore").rstrip("*")))
+                images.append((to_py(pos), m.group().decode(errors="ignore").rstrip("*")))
             continue
-        if text is None:
-            for f, v in parse_fields(r):
-                if f == 6 and len(v) > 1000:
-                    sub = parse_fields(v)
-                    if sub and isinstance(sub[0][1], bytes):
-                        try:
-                            text = sub[0][1].decode("utf-8")
-                            break
-                        except UnicodeDecodeError:
-                            pass
         # 样式记录: field2/field3 = 覆盖区间
         d = {}
         for f, v in parse_fields(r):
@@ -209,12 +231,9 @@ def extract_doc(payload):
         e0, _ = read_varint(f3, 1)
         if s0 is None or e0 is None or e0 <= s0 or e0 - s0 > 200:
             continue
-        # f2/f3 存储的区间相对真实字符位置整体右移一格, 真实区间为 [s-1, e-1)。
-        # 已由文档维护者对照源文档逐字确认三处: "政策每年在变化"整行含首字"政"
-        # 被高亮; "高一未分班"的"高"无高亮(单字记录移位后落在 \r 上);
-        # "金川不允许携带手机"9字全红(不含逗号)。发布页快照测得的引言例外
-        # 是因快照冻结的旧记录, 不代表当前文档。
-        s0, e0 = max(s0 - 1, 0), e0 - 1
+        s0, e0 = to_py(s0), to_py(e0)
+        if e0 <= s0:
+            continue
         attr = {}
         if re.search(rb"\xda\x03.\x08\x02", f7, re.S) or b"\x1a\x02\x08\x02" in f7:
             attr["bold"] = True
