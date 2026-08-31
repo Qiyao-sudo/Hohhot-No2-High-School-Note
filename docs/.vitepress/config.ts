@@ -13,7 +13,11 @@ export default defineConfig({
   description:
     '来自呼市二中呼伦校区 2022 级学长及所有参与文章建设的二中人',
   base: BASE,
-  head: [['link', { rel: 'icon', href: '/badge.svg' }]],
+  head: [
+    ['link', { rel: 'icon', href: '/badge.svg' }],
+    // 不蒜子访问统计(页脚 SiteFooter 展示, 加载失败自动隐藏)
+    ['script', { src: 'https://busuanzi.ibruce.info/busuanzi/pendant.min.js', async: '' }],
+  ],
   themeConfig: {
     // 校徽: 导航栏与侧栏标题前的站点 logo(圆角徽章底, 见 docs/public/badge.svg)
     logo: '/badge.svg',

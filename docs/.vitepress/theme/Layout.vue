@@ -8,6 +8,7 @@ import {
 import WalineComment from './WalineComment.vue'
 import ImageLightbox from './ImageLightbox.vue'
 import SidebarIcons from './SidebarIcons.vue'
+import SiteFooter from './SiteFooter.vue'
 
 const { frontmatter } = useData()
 
@@ -65,6 +66,7 @@ onMounted(() => {
     <template #layout-bottom>
       <ImageLightbox />
       <SidebarIcons />
+      <SiteFooter />
     </template>
   </DefaultTheme.Layout>
 </template>
