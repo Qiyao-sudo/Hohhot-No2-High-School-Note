@@ -56,20 +56,40 @@ WALINE_SERVERURL=https://<你的waline>.vercel.app npm run build
 该工作流只抓取源文档并提交推送；推送 `main` 会自动触发 `Sync & Deploy` 重建部署站点。
 无内容变化时不产生提交，也不会触发部署。
 
-## 国内访问镜像（Vercel）
+## 国内部署（腾讯云，推荐）
 
-GitHub Pages 的 `*.github.io` 域名在国内访问较慢。推荐在
-[Vercel](https://vercel.com) 加一个免费镜像（同一份代码，部署在根路径，
-`config.ts` 会通过平台环境变量自动切换 base，无需任何改动）：
+`*.github.io` 域名在国内访问较慢。推荐把前端和后端都迁到腾讯云（一个账号、
+免费额度起步、默认域名免备案、国内直连）：
 
-1. 用 GitHub 账号登录 Vercel → **Add New Project** → 导入本仓库；
-2. 框架已自动识别（根目录 `vercel.json`），直接 **Deploy**；
-3. 得到 `https://<项目名>.vercel.app` 镜像地址，国内访问通常明显快于 github.io；
-4. 若有 Waline 后端：在 Vercel 项目 **Settings → Environment Variables**
-   添加 `WALINE_SERVERURL`（与 GitHub Actions Secret 相同值）。
+### 前端：EdgeOne Pages
 
-> 两个部署源独立触发：GitHub Actions 推送到 Pages，Vercel 监听 main 分支自动构建。
-> 有自定义域名时，可在任一平台绑定域名获得最佳国内速度。
+1. 腾讯云控制台 → **EdgeOne → Pages** → 创建项目，关联本 GitHub 仓库；
+2. 构建设置：
+
+   | 项 | 值 |
+   | --- | --- |
+   | 构建命令 | `npm run build` |
+   | 输出目录 | `docs/.vitepress/dist` |
+   | 环境变量 | `BASE=/`（站点部署在根路径） |
+
+3. 部署完成后得到 `https://<项目名>.edgeonepages.com` 国内加速域名；
+4. 若有 Waline 后端：在项目环境变量中再加 `WALINE_SERVERURL`（值同下方后端部署输出）。
+
+### 后端：云开发 CloudBase（Waline）
+
+按 [docs/waline-setup.md](docs/waline-setup.md) 的方案一执行
+`npx @waline/cloudbase` 一键部署，得到 `https://<环境ID>.tcloudbase.com`，
+把该地址填入所有部署平台的环境变量 `WALINE_SERVERURL`。
+
+> 三个部署源独立自动更新：GitHub Actions 推 Pages，EdgeOne Pages 与 Vercel
+> 各自监听 main 分支构建，内容永远与源文档同步。GitHub 仓库仍是同步中枢
+> （抓取源文档 + 自动提交），不会因国内部署而改变。
+
+### 备选：Vercel 镜像
+
+用 GitHub 账号登录 [Vercel](https://vercel.com) → 导入本仓库 → Deploy
+（根目录 `vercel.json` 已配置好，`config.ts` 会自动切换 base）。
+`vercel.app` 国内速度好于 github.io，但不如 EdgeOne Pages 稳定。
 
 > 若仓库不是 `<user>.github.io`，`docs/.vitepress/config.ts` 中的 `BASE`
 > 需与仓库名一致（默认 `/Hohhot-No2-High-School-Note/`）。
