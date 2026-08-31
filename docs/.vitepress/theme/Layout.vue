@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import DefaultTheme from 'vitepress/theme'
 import { onMounted, ref } from 'vue'
-import { useData } from 'vitepress'
+import { useData, withBase } from 'vitepress'
 import WalineComment from './WalineComment.vue'
 import ImageLightbox from './ImageLightbox.vue'
 
@@ -45,6 +45,18 @@ onMounted(() => {
           <line x1="13" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
         </svg>
       </button>
+      <!-- 侧栏收起时的紧凑品牌组合: 蓝条与正文 h3 同语言, 双色分主次, 点击回首页 -->
+      <a
+        v-if="frontmatter.sidebar !== false"
+        v-show="!sidebarOpen"
+        class="nav-brand-lockup"
+        :href="withBase('/')"
+        aria-label="呼市二中学习生活指导, 返回首页"
+      >
+        <span class="brand-bar" aria-hidden="true"></span>
+        <span class="brand-main">呼市二中</span>
+        <span class="brand-sub">学习生活指导</span>
+      </a>
     </template>
     <template #doc-after>
       <!-- 在带 comment: true 的页面(如留言处)渲染 Waline 评论 -->

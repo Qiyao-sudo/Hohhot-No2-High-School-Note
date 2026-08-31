@@ -744,10 +744,9 @@ html.sidebar-collapsed .VPSidebar {
    默认主题中 .VPNavBar.has-sidebar 的站点名是绝对定位且宽度=侧栏宽,
    归零后会溢出遮挡菜单/搜索框, 这里改为常规流式布局并补回导航背景。 */
 @media (min-width: 960px) {
+  /* 收起时默认标题区整个让位, 由 nav-bar-content-before 里的紧凑品牌组合接管 */
   html.sidebar-collapsed .VPNavBar.has-sidebar .title {
-    position: static;
-    width: auto;
-    padding: 0 24px 0 0;
+    display: none;
   }
 
   html.sidebar-collapsed .VPNavBar.has-sidebar .container {
@@ -764,12 +763,58 @@ html.sidebar-collapsed .VPSidebar {
 }
 
 @media (min-width: 1440px) {
-  html.sidebar-collapsed .VPNavBar.has-sidebar .title {
-    padding-left: 0;
-    width: auto;
-  }
-
   html.sidebar-collapsed .VPNavBar.has-sidebar .content {
     padding-left: 0;
+  }
+}
+
+/* 收起态的紧凑品牌组合: 蓝条呼应正文 h3, 主名/副名双色分主次 */
+.nav-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-right: 14px;
+  padding: 4px 6px 4px 0;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.nav-brand-lockup:hover {
+  background: var(--vp-custom-1, rgba(128, 128, 128, 0.1));
+}
+
+.nav-brand-lockup .brand-bar {
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--vp-c-brand-1);
+  margin-left: 6px;
+}
+
+.nav-brand-lockup .brand-main {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--vp-c-text-1);
+}
+
+.nav-brand-lockup .brand-sub {
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--vp-c-text-3);
+  transition: color 0.2s ease;
+}
+
+.nav-brand-lockup:hover .brand-sub {
+  color: var(--vp-c-text-2);
+}
+
+@media (max-width: 959px) {
+  .nav-brand-lockup {
+    display: none !important;
   }
 }
