@@ -4,39 +4,34 @@
 
 ## 方案一（推荐）：腾讯云开发 CloudBase（国内直连）
 
-Waline 官方提供 CloudBase 一键部署模板：云函数 + 云数据库都在腾讯云国内节点，
-默认域名（`*.tcloudbase.com`）免备案、国内访问快，个人免费额度足够使用。
+Waline 官方提供云开发模板，**纯网页操作、约 5 分钟**，云函数 + 云数据库
+都在腾讯云国内节点，默认域名（`*.tcloudbase.com`）免备案、国内访问快，
+个人免费额度足够使用。
 
-1. 在 [腾讯云](https://cloud.tencent.com) 完成实名认证（学生可用），开通
-   **云开发 CloudBase**（控制台搜索"云开发"，免费额度以控制台显示为准）。
+1. 在 [腾讯云](https://cloud.tencent.com) 完成实名认证（学生可实名），
+   开通**云开发 CloudBase**（控制台搜索"云开发"）。
 
-2. 本地任意目录执行一键部署命令（会弹出微信扫码授权）：
+2. 打开 Waline 官方部署页，点击页面上的一键部署按钮：
+   <https://waline.js.org/guide/deploy/cloudbase.html>
 
-   ```bash
-   npx @waline/cloudbase
-   ```
+   - 跳转到腾讯云开发后，选择已有应用或**新建应用**；
+   - 点击 **下一步: 应用配置** → **完成**，自动进入部署（约 3-5 分钟）；
+   - 部署完成后点击 **访问** 按钮，浏览器里打开的地址就是 serverURL，
+     形如 `https://<环境ID>.tcloudbase.com`。
 
-   按提示：登录腾讯云 → 选择（或新建）云开发环境 → 自动部署。
-
-3. 部署完成后命令会输出 serverURL，形如：
-
-   ```
-   https://<环境ID>.tcloudbase.com
-   ```
-
-4. 配置环境变量：云开发控制台 → **云函数** → 找到 Waline 函数 →
-   **函数配置 → 环境变量**，添加：
+3. 设置环境变量（可选但建议）：云开发控制台 → 该应用的环境 →
+   **云函数 → 函数配置 → 环境变量**，添加：
 
    | 变量名 | 值 |
    | --- | --- |
    | `LOGIN` | `anonymous` |
    | `REQUIRED_META` | `["nick"]` |
-   | `SECURE_DOMAINS` | 你的站点域名（如 `xxx.tcloudbase.com`、`xxx.github.io`） |
+   | `SECURE_DOMAINS` | 你的站点域名（如 `xxx.edgeonepages.com`、`xxx.github.io`） |
 
-5. 记下 serverURL，按下方「把 serverURL 配置进站点」操作。
+4. 记下 serverURL，按下方「把 serverURL 配置进站点」操作。
 
-评论管理后台：访问 `https://<环境ID>.tcloudbase.com/ui`，首次进入注册的
-账号即为管理员，可审核/删除留言。
+评论管理后台：访问 `<serverURL>/ui`，首次进入注册的账号即为管理员，
+可审核/删除留言。
 
 ## 方案二（备选）：Vercel + LeanCloud 国际版
 
@@ -69,12 +64,14 @@ Waline 官方提供 CloudBase 一键部署模板：云函数 + 云数据库都�
 
 站点在构建时通过环境变量 `WALINE_SERVERURL` 注入评论后端地址，各部署平台分别配置：
 
+- **腾讯云 EdgeOne Pages**（国内前端）：项目设置 → 环境变量，添加 `WALINE_SERVERURL`。
 - **GitHub Pages**：仓库 Settings → Secrets and variables → Actions，
-  添加 Secret `WALINE_SERVERURL = <你的serverURL>`，重新运行 `Sync & Deploy`。
-- **腾讯云 EdgeOne Pages**（国内前端镜像）：项目设置 → 环境变量，添加同名变量。
+  添加 Secret `WALINE_SERVERURL`，重新运行 `Sync & Deploy`。
 - **Vercel**（镜像）：项目 Settings → Environment Variables，添加同名变量。
 - **本地开发**：`WALINE_SERVERURL=... npm run dev`，或直接改
   `docs/.vitepress/config.ts` 中的默认值。
+
+未配置前，留言页评论区会显示「评论区后端尚未配置」的提示条，站点其余功能不受影响。
 
 ## 留言与源文档同步
 
