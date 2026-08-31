@@ -4,6 +4,7 @@
 
 - **框架**：[VitePress](https://vitepress.dev/) 生成静态站点
 - **评论**：[Waline](https://waline.js.org) 匿名模式（昵称必填、邮箱可选、免登录）
+- **文档助手**：基于站内文档的 AI 问答（DeepSeek + RAG 检索，回答带引用来源可跳转），另有免 AI 的快速检索模式
 - **部署**：后端 + 数据库免费部署在 Vercel / LeanCloud，站点托管在 GitHub Pages
 - **同步**：源文档 → 网站自动同步（GitHub Actions 定时 + 手动触发），**含正文全部图片**（138 张，自动下载压缩到 `docs/public/images/` 并按原始位置嵌入）
 
@@ -12,12 +13,16 @@
 ```
 ├── docs/                    # VitePress 站点根目录(内容页由脚本生成)
 │   ├── .vitepress/
-│   │   ├── config.ts        # 站点配置(BASE / Waline serverURL 在此调整)
-│   │   └── theme/           # 主题 + Waline 评论组件
+│   │   ├── config.ts        # 站点配置(BASE / Waline serverURL / 助手后端地址在此调整)
+│   │   └── theme/           # 主题 + Waline 评论组件 + 文档助手聊天组件
 │   ├── index.md             # 首页(手写, 不被同步覆盖)
+│   ├── assistant/           # 文档助手独立页面(全站另有右下角浮动入口)
 │   └── *.md                 # 各板块页面(由 sync_doc.py 生成)
+├── server/                  # 文档助手后端(零依赖 Node 18+, 检索+DeepSeek+SSE)
+├── api/assistant/           # Vercel Serverless 适配(同项目部署即获得后端)
 ├── scripts/
 │   ├── sync_doc.py          # 腾讯文档抓取 → Markdown 转换
+│   ├── build-kb.mjs         # docs/*.md → 助手知识库(server/data/kb.mjs)
 │   └── outline.json         # 源文档真实标题大纲(层级权威来源)
 ├── .github/workflows/
 │   ├── deploy.yml           # 定时/推送/手动: 同步 + 构建部署 GitHub Pages
@@ -31,7 +36,14 @@
 npm install
 python scripts/sync_doc.py    # 从腾讯文档同步最新内容
 npm run dev                   # 本地预览 http://localhost:5173
-npm run build                 # 构建到 docs/.vitepress/dist
+npm run build                 # 重建助手知识库 + 构建到 docs/.vitepress/dist
+```
+
+本地体验文档助手（可选）：
+
+```bash
+cp .env.example .env          # 填入 DEEPSEEK_API_KEY
+npm run assistant             # 起后端 :8787, 再 npm run dev 即可在前端对话
 ```
 
 本地构建带 Waline 评论：
@@ -48,7 +60,10 @@ WALINE_SERVERURL=https://<你的waline>.vercel.app npm run build
    Vercel + LeanCloud 免费部署，得到 `serverURL`。
 4. **配置 Secret**：仓库 Settings → Secrets and variables → Actions 添加
    `WALINE_SERVERURL = https://<你的waline>.vercel.app`。
-5. **触发部署**：Actions 页面手动运行 `Sync & Deploy`，或直接 push 代码。
+5. **（可选）启用文档助手**：Vercel 项目环境变量加 `DEEPSEEK_API_KEY` 后，
+   再在仓库 Secrets 加 `ASSISTANT_API = https://<你的vercel镜像>.vercel.app/api/assistant`。
+   详见[文档助手部署指南](docs/assistant-setup.md)。
+6. **触发部署**：Actions 页面手动运行 `Sync & Deploy`，或直接 push 代码。
 
 ## 手动同步源文档
 
@@ -73,7 +88,8 @@ WALINE_SERVERURL=https://<你的waline>.vercel.app npm run build
    | 环境变量 | `BASE=/`（站点部署在根路径） |
 
 3. 部署完成后得到 `https://<项目名>.edgeonepages.com` 国内加速域名；
-4. 若有 Waline 后端：在项目环境变量中再加 `WALINE_SERVERURL`（值同下方后端部署输出）。
+4. 若有 Waline 后端：在项目环境变量中再加 `WALINE_SERVERURL`（值同下方后端部署输出）；
+5. 若要启用文档助手：再加 `ASSISTANT_API = https://<你的vercel镜像>.vercel.app/api/assistant`（助手后端随 Vercel 镜像自动部署，见[文档助手部署指南](docs/assistant-setup.md)）。
 
 ### 后端：云开发 CloudBase（Waline）
 
