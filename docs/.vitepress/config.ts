@@ -1,4 +1,19 @@
 import { defineConfig } from 'vitepress'
+import fs from 'node:fs'
+import path from 'node:path'
+
+// 本地开发便利: 读取仓库根目录 .env(KEY=VALUE), 不覆盖已有环境变量;
+// Vercel/GitHub Actions 等平台部署时使用平台注入的环境变量, 通常没有 .env。
+try {
+  const raw = fs.readFileSync(path.resolve(process.cwd(), '.env'), 'utf8')
+  for (const line of raw.split(/\r?\n/)) {
+    if (line.trim().startsWith('#')) continue
+    const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/)
+    if (!m) continue
+    const val = m[2].replace(/^['"]|['"]$/g, '')
+    if (!(m[1] in process.env)) process.env[m[1]] = val
+  }
+} catch { /* 无 .env 文件时跳过 */ }
 
 // 站点根路径:
 // - GitHub Pages 挂在仓库子路径 /Hohhot-No2-High-School-Note/
@@ -14,6 +29,10 @@ const BASE =
 const WALINE_SERVERURL =
   process.env.WALINE_SERVERURL || 'https://your-waline.vercel.app'
 
+// 文档助手后端地址: 默认同源 /api/assistant —— Vercel 同项目部署(前端+api/函数)
+// 即插即用; 独立部署后端时通过 ASSISTANT_API 指向其地址(见 docs/assistant-setup.md)
+const ASSISTANT_API = process.env.ASSISTANT_API || '/api/assistant'
+
 export default defineConfig({
   lang: 'zh-CN',
   title: '呼市二中学习生活指导',
@@ -21,7 +40,8 @@ export default defineConfig({
     '来自呼市二中呼伦校区 2022 级学长及所有参与文章建设的二中人',
   base: BASE,
   head: [
-    ['link', { rel: 'icon', href: '/badge.svg' }],
+    // favicon 需手动拼 base(head 里的 href 不会被 VitePress 自动加前缀)
+    ['link', { rel: 'icon', href: BASE + 'badge.svg' }],
     // 不蒜子访问统计(页脚 SiteFooter 展示, 加载失败自动隐藏)
     ['script', { src: 'https://busuanzi.ibruce.info/busuanzi/pendant.min.js', async: '' }],
   ],
@@ -33,6 +53,7 @@ export default defineConfig({
       { text: '新生须知', link: '/freshman' },
       { text: '校园生活', link: '/daily' },
       { text: '学习板块', link: '/study' },
+      { text: '文档助手', link: '/assistant/' },
       { text: '留言处', link: '/messages' },
     ],
     // 侧栏按"学生找信息"的场景分组(而非照搬源文档目录):
@@ -76,6 +97,7 @@ export default defineConfig({
         text: '交流',
         collapsed: false,
         items: [
+          { text: '文档助手', link: '/assistant/' },
           { text: '留言处', link: '/messages' },
           { text: '后记', link: '/afterword' },
         ],
@@ -135,10 +157,11 @@ export default defineConfig({
     ],
   },
   markdown: { lineNumbers: false },
-  // 供 WalineComment 组件读取
+  // 供 WalineComment / AssistantChat 组件读取
   vite: {
     define: {
       __WALINE_SERVERURL__: JSON.stringify(WALINE_SERVERURL),
+      __ASSISTANT_API__: JSON.stringify(ASSISTANT_API),
     },
   },
 })

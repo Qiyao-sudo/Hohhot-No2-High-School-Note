@@ -9,6 +9,7 @@ import WalineComment from './WalineComment.vue'
 import ImageLightbox from './ImageLightbox.vue'
 import SidebarIcons from './SidebarIcons.vue'
 import SiteFooter from './SiteFooter.vue'
+import AssistantWidget from './AssistantWidget.vue'
 
 const { frontmatter } = useData()
 
@@ -67,6 +68,8 @@ onMounted(() => {
       <ImageLightbox />
       <SidebarIcons />
       <SiteFooter />
+      <!-- 浮动文档助手(独立页面 /assistant/ 自动隐藏) -->
+      <AssistantWidget />
     </template>
   </DefaultTheme.Layout>
 </template>

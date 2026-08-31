@@ -914,3 +914,40 @@
   align-items: center;
   gap: 4px;
 }
+
+/* ---------------------------------------------------------------- 文档助手页 */
+
+.assistant-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3rem;
+}
+
+.assistant-page .assistant-head h1 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin: 1.6rem 0 0.6rem;
+  color: var(--vp-c-text-1);
+}
+
+.assistant-page .assistant-sub {
+  max-width: 46em;
+  color: var(--vp-c-text-2);
+  font-size: 0.92rem;
+  line-height: 1.8;
+  margin: 0 0 1.4rem;
+}
+
+.assistant-page .assistant-note {
+  margin-top: 1.1rem;
+  font-size: 0.78rem;
+  color: var(--vp-c-text-3);
+  line-height: 1.8;
+}
+
+.assistant-page .assistant-note a {
+  color: var(--vp-c-brand-1);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
