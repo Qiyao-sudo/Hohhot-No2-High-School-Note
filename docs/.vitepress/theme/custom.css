@@ -739,3 +739,37 @@ html.sidebar-collapsed .VPSidebar {
 .VPDocAsideOutline .outline-link {
   line-height: 1.7;
 }
+
+/* 收起侧栏时, 导航栏需同步还原为"无侧栏"布局:
+   默认主题中 .VPNavBar.has-sidebar 的站点名是绝对定位且宽度=侧栏宽,
+   归零后会溢出遮挡菜单/搜索框, 这里改为常规流式布局并补回导航背景。 */
+@media (min-width: 960px) {
+  html.sidebar-collapsed .VPNavBar.has-sidebar .title {
+    position: static;
+    width: auto;
+    padding: 0 24px 0 0;
+  }
+
+  html.sidebar-collapsed .VPNavBar.has-sidebar .container {
+    max-width: calc(var(--vp-layout-max-width) - 64px);
+  }
+
+  html.sidebar-collapsed .VPNavBar.has-sidebar .content {
+    padding-left: 0;
+  }
+
+  html.sidebar-collapsed .VPNavBar:not(.home) {
+    background-color: var(--vp-nav-bg-color);
+  }
+}
+
+@media (min-width: 1440px) {
+  html.sidebar-collapsed .VPNavBar.has-sidebar .title {
+    padding-left: 0;
+    width: auto;
+  }
+
+  html.sidebar-collapsed .VPNavBar.has-sidebar .content {
+    padding-left: 0;
+  }
+}

@@ -73,6 +73,35 @@ export default defineConfig({
     search: {
       provider: 'local',
       options: {
+        // miniSearch 默认分词按空白/标点切分, 中文整句会变成一个巨型词元,
+        // 导致"校服"搜不到"关于校服/秋季校服"。这里换成中文二元(bigram)
+        // 分词: 单字 + 相邻两字组合, 中文子串即可命中(标题与正文都会索引)。
+        miniSearch: {
+          options: {
+            tokenize(text: string): string[] {
+              const tokens: string[] = []
+              for (const m of text.matchAll(/[a-zA-Z0-9]+/g)) {
+                tokens.push(m[0].toLowerCase())
+              }
+              for (const run of text.match(/[\u4e00-\u9fff]+/g) ?? []) {
+                if (run.length === 1) {
+                  tokens.push(run)
+                  continue
+                }
+                for (let i = 0; i < run.length; i++) {
+                  tokens.push(run.slice(i, i + 1))
+                  if (i + 2 <= run.length) tokens.push(run.slice(i, i + 2))
+                }
+              }
+              return tokens
+            },
+          },
+          searchOptions: {
+            fuzzy: 0.2,
+            prefix: true,
+            boost: { title: 4, titles: 3, text: 1 },
+          },
+        },
         translations: {
           button: { buttonText: '搜索文档', buttonAriaLabel: '搜索文档' },
           modal: {
