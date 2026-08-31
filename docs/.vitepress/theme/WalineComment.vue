@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import {
+  PhChatsCircle,
+} from '@phosphor-icons/vue'
 import { init } from '@waline/client'
 import '@waline/client/waline.css'
 
@@ -32,7 +35,10 @@ onMounted(() => {
 
 <template>
   <div class="waline-wrapper">
-    <h2 id="comment">评论留言</h2>
+    <h2 id="comment">
+      <component :is="PhChatsCircle" :size="20" weight="duotone" aria-hidden="true" />
+      评论留言
+    </h2>
     <p class="hint">
       无需注册登录，填写<span class="required">昵称</span>（必填）和
       <span class="optional">邮箱</span>（选填，用于接收回复通知）即可留言。

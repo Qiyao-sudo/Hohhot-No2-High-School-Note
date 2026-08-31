@@ -845,3 +845,72 @@
 .img-lightbox {
   touch-action: none;
 }
+
+
+/* --------------------------------------------------------- 图标 */
+
+/* 侧栏分组标题注入的图标(由 SidebarIcons 组件克隆注入) */
+.VPSidebarItem.level-0 > .item .text.has-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.VPSidebarItem.level-0 > .item .text.has-icon svg {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* 首页分组标题图标 */
+.home-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-group h3 svg {
+  color: var(--vp-c-brand-1);
+  flex-shrink: 0;
+}
+
+/* 按钮/链接内图标与文字对齐 */
+.btn,
+.btn-primary,
+.home-cta .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.waline-wrapper h2#comment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.waline-wrapper h2#comment svg {
+  color: var(--vp-c-brand-1);
+}
+
+.img-lightbox-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.doc-intro-audio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.doc-intro-audio svg {
+  color: var(--vp-c-brand-1);
+  flex-shrink: 0;
+}
+
+.doc-intro-foot a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

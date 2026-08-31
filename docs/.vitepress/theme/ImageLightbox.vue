@@ -4,6 +4,9 @@
 // 单击/双击在 1x/2x 间切换、点击遮罩或 Esc 关闭。
 // 事件委托, 无需为每张图片单独绑定。
 import { onMounted, onUnmounted, ref } from 'vue'
+import {
+  PhMagnifyingGlassPlus,
+} from '@phosphor-icons/vue'
 
 const MAX = 8
 const MIN = 1
@@ -166,7 +169,10 @@ onUnmounted(() => {
         @click="toggleZoom"
         @dragstart.prevent
       />
-      <span class="img-lightbox-hint">滚轮/双指缩放 · 放大后可拖动 · 点击图片切换 1x/2x · Esc 关闭</span>
+      <span class="img-lightbox-hint">
+        <component :is="PhMagnifyingGlassPlus" :size="14" aria-hidden="true" />
+        滚轮/双指缩放 · 放大后可拖动 · 点击图片切换 1x/2x · Esc 关闭
+      </span>
     </div>
   </Teleport>
 </template>

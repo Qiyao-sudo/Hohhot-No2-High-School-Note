@@ -1,10 +1,19 @@
 <script setup lang="ts">
 import { withBase } from 'vitepress'
+import {
+  PhGraduationCap,
+  PhUsersThree,
+  PhShieldCheck,
+  PhBookOpenText,
+  PhChatCircle,
+  PhArrowRight,
+} from '@phosphor-icons/vue'
 
 // 首页 Hero 与板块目录(真实校园航拍图来自源文档"航拍影像"板块)
 const groups = [
   {
     name: '新生',
+    icon: PhGraduationCap,
     items: [
       { title: '新生须知', desc: '录取 · 军训 · 校服', link: '/freshman' },
       { title: '日常生活', desc: '作息 · 食堂 · 住宿', link: '/daily' },
@@ -12,6 +21,7 @@ const groups = [
   },
   {
     name: '校园组织',
+    icon: PhUsersThree,
     items: [
       { title: '学生会 国旗班 播音站', desc: '加入与选拔', link: '/student-org' },
       { title: '社团相关', desc: '社团选择', link: '/clubs' },
@@ -19,6 +29,7 @@ const groups = [
   },
   {
     name: '政策与传统',
+    icon: PhShieldCheck,
     items: [
       { title: '日常学习政策及环境', desc: '分班 · 课间 · 作业', link: '/study-policy' },
       { title: '日常管理', desc: '手机 · 头发 · 校规', link: '/management' },
@@ -28,6 +39,7 @@ const groups = [
   },
   {
     name: '学习与互动',
+    icon: PhBookOpenText,
     items: [
       { title: '学习板块', desc: '通用与分科方法', link: '/study' },
       { title: '留言处', desc: '匿名提问 · 及时解答', link: '/messages' },
@@ -48,8 +60,14 @@ const groups = [
           怎么选社团、如何规划学习，这里都有过来人的答案。
         </p>
         <div class="home-hero-actions">
-          <a class="btn btn-primary" :href="withBase('/freshman')">从新生须知开始</a>
-          <a class="btn btn-ghost" :href="withBase('/messages')">去留言区提问</a>
+          <a class="btn btn-primary" :href="withBase('/freshman')">
+            从新生须知开始
+            <component :is="PhArrowRight" :size="16" weight="bold" aria-hidden="true" />
+          </a>
+          <a class="btn btn-ghost" :href="withBase('/messages')">
+            <component :is="PhChatCircle" :size="16" aria-hidden="true" />
+            去留言区提问
+          </a>
         </div>
       </div>
       <figure class="home-hero-figure">
@@ -61,7 +79,10 @@ const groups = [
       <h2 class="home-section-title">全部板块</h2>
       <div class="home-groups">
         <div v-for="g in groups" :key="g.name" class="home-group">
-          <h3>{{ g.name }}</h3>
+          <h3>
+            <component :is="g.icon" :size="18" weight="duotone" aria-hidden="true" />
+            {{ g.name }}
+          </h3>
           <ul>
             <li v-for="it in g.items" :key="it.link">
               <a :href="withBase(it.link)">

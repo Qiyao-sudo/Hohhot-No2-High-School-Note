@@ -2,8 +2,12 @@
 import DefaultTheme from 'vitepress/theme'
 import { onMounted, ref } from 'vue'
 import { useData, withBase } from 'vitepress'
+import {
+  PhSidebarSimple,
+} from '@phosphor-icons/vue'
 import WalineComment from './WalineComment.vue'
 import ImageLightbox from './ImageLightbox.vue'
+import SidebarIcons from './SidebarIcons.vue'
 
 const { frontmatter } = useData()
 
@@ -38,12 +42,7 @@ onMounted(() => {
         :aria-label="sidebarOpen ? '收起侧栏' : '展开侧栏'"
         @click="toggleSidebar"
       >
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <rect x="3" y="4.5" width="18" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
-          <line x1="9.5" y1="4.5" x2="9.5" y2="19.5" stroke="currentColor" stroke-width="1.8" />
-          <line x1="13" y1="8.5" x2="18" y2="8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          <line x1="13" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-        </svg>
+        <component :is="PhSidebarSimple" :size="19" weight="bold" aria-hidden="true" />
       </button>
       <!-- 侧栏收起时的紧凑品牌组合: 校徽 + 主名/副名双色, 点击回首页 -->
       <a
@@ -65,6 +64,7 @@ onMounted(() => {
     <!-- 全站图片点击放大(layout-bottom 插槽保证始终渲染) -->
     <template #layout-bottom>
       <ImageLightbox />
+      <SidebarIcons />
     </template>
   </DefaultTheme.Layout>
 </template>
