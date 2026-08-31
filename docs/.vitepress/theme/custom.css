@@ -665,14 +665,17 @@
   background: var(--vp-custom-1, rgba(128, 128, 128, 0.12));
 }
 
-/* 收起侧栏: 宽度变量归零, 内容区/导航的偏移随之归零 */
-html.sidebar-collapsed {
-  --vp-sidebar-width: 0px;
-}
+/* 收起侧栏(仅桌面端): 宽度变量归零, 内容区/导航的偏移随之归零。
+   必须限制在 >=960px, 否则手机抽屉侧栏会被误隐藏。 */
+@media (min-width: 960px) {
+  html.sidebar-collapsed {
+    --vp-sidebar-width: 0px;
+  }
 
-html.sidebar-collapsed .VPSidebar {
-  visibility: hidden;
-  pointer-events: none;
+  html.sidebar-collapsed .VPSidebar {
+    visibility: hidden;
+    pointer-events: none;
+  }
 }
 
 .VPContent.has-sidebar {
@@ -786,12 +789,11 @@ html.sidebar-collapsed .VPSidebar {
   background: var(--vp-custom-1, rgba(128, 128, 128, 0.1));
 }
 
-.nav-brand-lockup .brand-bar {
-  width: 3px;
-  height: 16px;
-  border-radius: 2px;
-  background: var(--vp-c-brand-1);
-  margin-left: 6px;
+.nav-brand-lockup .brand-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  display: block;
 }
 
 .nav-brand-lockup .brand-main {
@@ -817,4 +819,29 @@ html.sidebar-collapsed .VPSidebar {
   .nav-brand-lockup {
     display: none !important;
   }
+}
+
+
+/* ------------------------------------------------------- 手机端导航栏 */
+
+/* 默认主题在 <960px 时导航栏是 relative(跟着页面滚走), 下翻后标题栏、
+   搜索和菜单全部消失。改为固定在顶部, 内容相应下移一个导航栏高度,
+   "回到顶部"条吸附在导航栏下方。 */
+@media (max-width: 959.98px) {
+  .VPNav {
+    position: fixed;
+  }
+
+  .VPContent {
+    padding-top: var(--vp-nav-height);
+  }
+
+  .VPLocalNav {
+    top: var(--vp-nav-height);
+  }
+}
+
+/* 灯箱双指缩放: 禁止浏览器默认手势抢占触摸事件 */
+.img-lightbox {
+  touch-action: none;
 }

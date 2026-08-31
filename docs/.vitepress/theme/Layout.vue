@@ -45,7 +45,7 @@ onMounted(() => {
           <line x1="13" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
         </svg>
       </button>
-      <!-- 侧栏收起时的紧凑品牌组合: 蓝条与正文 h3 同语言, 双色分主次, 点击回首页 -->
+      <!-- 侧栏收起时的紧凑品牌组合: 校徽 + 主名/副名双色, 点击回首页 -->
       <a
         v-if="frontmatter.sidebar !== false"
         v-show="!sidebarOpen"
@@ -53,7 +53,7 @@ onMounted(() => {
         :href="withBase('/')"
         aria-label="呼市二中学习生活指导, 返回首页"
       >
-        <span class="brand-bar" aria-hidden="true"></span>
+        <img class="brand-badge" :src="withBase('/badge.svg')" alt="" aria-hidden="true" />
         <span class="brand-main">呼市二中</span>
         <span class="brand-sub">学习生活指导</span>
       </a>
