@@ -209,6 +209,12 @@ def extract_doc(payload):
         e0, _ = read_varint(f3, 1)
         if s0 is None or e0 is None or e0 <= s0 or e0 - s0 > 200:
             continue
+        # f2/f3 存储的区间相对真实字符位置整体右移一格, 真实区间为 [s-1, e-1)。
+        # 已由文档维护者对照源文档逐字确认三处: "政策每年在变化"整行含首字"政"
+        # 被高亮; "高一未分班"的"高"无高亮(单字记录移位后落在 \r 上);
+        # "金川不允许携带手机"9字全红(不含逗号)。发布页快照测得的引言例外
+        # 是因快照冻结的旧记录, 不代表当前文档。
+        s0, e0 = max(s0 - 1, 0), e0 - 1
         attr = {}
         if re.search(rb"\xda\x03.\x08\x02", f7, re.S) or b"\x1a\x02\x08\x02" in f7:
             attr["bold"] = True
