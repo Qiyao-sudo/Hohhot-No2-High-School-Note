@@ -22,44 +22,67 @@ export default defineConfig({
       { text: '学习板块', link: '/study' },
       { text: '留言处', link: '/messages' },
     ],
+    // 侧栏按"学生找信息"的场景分组(而非照搬源文档目录):
+    // 新生先看入学准备 → 校园生活 → 规矩政策 → 学习方法 → 校区差异 → 交流。
+    // collapsed:false = 默认展开但可点击收起, 所在分组自动高亮。
     sidebar: [
       {
-        text: '新生',
-        items: [
-          { text: '新生须知', link: '/freshman' },
-          { text: '日常生活', link: '/daily' },
-        ],
+        text: '新生必读',
+        collapsed: false,
+        items: [{ text: '入学准备全览', link: '/freshman' }],
       },
       {
-        text: '校园组织',
+        text: '校园生活',
+        collapsed: false,
         items: [
-          { text: '学生会 国旗班 播音站', link: '/student-org' },
+          { text: '日常生活', link: '/daily' },
+          { text: '学生会·国旗班·播音站', link: '/student-org' },
           { text: '社团相关', link: '/clubs' },
         ],
       },
       {
         text: '政策与管理',
+        collapsed: false,
         items: [
-          { text: '日常学习政策及环境', link: '/study-policy' },
-          { text: '日常管理', link: '/management' },
-          { text: '金川校区情况', link: '/jinchuan' },
+          { text: '学习政策与环境', link: '/study-policy' },
+          { text: '日常管理(手机/头发等)', link: '/management' },
           { text: '二中传统', link: '/tradition' },
         ],
       },
       {
-        text: '学习与互动',
+        text: '学习方法',
+        collapsed: false,
+        items: [{ text: '学习板块', link: '/study' }],
+      },
+      {
+        text: '金川校区',
+        collapsed: false,
+        items: [{ text: '金川校区情况', link: '/jinchuan' }],
+      },
+      {
+        text: '交流',
+        collapsed: false,
         items: [
-          { text: '学习板块', link: '/study' },
           { text: '留言处', link: '/messages' },
           { text: '后记', link: '/afterword' },
         ],
       },
-      {
-        text: '站点',
-        items: [{ text: '评论后端部署', link: '/waline-setup' }],
-      },
     ],
-    outline: { level: [2, 3] },
+    outline: { level: [2, 3], label: '本页目录' },
+    returnToTop: '回到顶部',
+    search: {
+      provider: 'local',
+      options: {
+        translations: {
+          button: { buttonText: '搜索文档', buttonAriaLabel: '搜索文档' },
+          modal: {
+            noResultsText: '未找到相关内容',
+            resetButtonTitle: '清除关键词',
+            footer: { selectText: '打开', navigateText: '切换', closeText: '关闭' },
+          },
+        },
+      },
+    },
     docFooter: { prev: '上一页', next: '下一页' },
     lastUpdated: {
       text: '最近更新',

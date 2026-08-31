@@ -2,6 +2,7 @@
 title: 呼市二中学习生活指导
 layout: page
 aside: false
+sidebar: false
 ---
 
 <script setup>

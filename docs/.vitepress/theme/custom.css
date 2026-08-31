@@ -641,3 +641,101 @@
   background: var(--vp-c-brand-2);
   border-color: var(--vp-c-brand-2);
 }
+
+/* ---------------------------------------------------------------- 侧栏开关 */
+
+.sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  color: var(--vp-c-text-1);
+  background: var(--vp-custom-1, rgba(128, 128, 128, 0.12));
+}
+
+/* 收起侧栏: 宽度变量归零, 内容区/导航的偏移随之归零 */
+html.sidebar-collapsed {
+  --vp-sidebar-width: 0px;
+}
+
+html.sidebar-collapsed .VPSidebar {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.VPContent.has-sidebar {
+  transition: padding-left 0.25s ease;
+}
+
+/* 小屏走 VitePress 自带抽屉, 隐藏桌面开关避免重复入口 */
+@media (max-width: 768px) {
+  .sidebar-toggle {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------- 侧栏信息架构(分组/条目) */
+
+/* 一级分组标题: 弱化为小标签, 让页面条目更突出 */
+.VPSidebarItem.level-0 > .item .text {
+  font-size: 0.76em;
+  letter-spacing: 0.08em;
+  color: var(--vp-c-text-3);
+}
+
+.VPSidebarItem.level-0.is-active > .item .text {
+  color: var(--vp-c-brand-1);
+}
+
+/* 当前页条目: 左侧蓝条 + 加粗 */
+.VPSidebarItem.is-active > .item .link {
+  position: relative;
+}
+
+.VPSidebarItem.is-active > .item .link::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--vp-c-brand-1);
+}
+
+.VPSidebar .nav {
+  scrollbar-width: thin;
+}
+
+/* ------------------------------------------------------- 本页目录(右侧) */
+
+/* 标题弱化为小标签 */
+.VPDocAsideOutline .outline-title {
+  font-size: 0.76em;
+  letter-spacing: 0.08em;
+  color: var(--vp-c-text-3);
+}
+
+/* 长页面(学习方法/日常/留言等)目录可限高滚动, 不与页面比长 */
+.VPDocAsideOutline .content {
+  max-height: calc(100vh - 14rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-right: 4px;
+}
+
+.VPDocAsideOutline .outline-link {
+  line-height: 1.7;
+}
