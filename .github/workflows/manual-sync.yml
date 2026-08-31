@@ -32,11 +32,14 @@ jobs:
       - name: Sync from Tencent Doc (源文档)
         run: python scripts/sync_doc.py
 
+      - name: Rebuild assistant KB (文档助手知识库)
+        run: node scripts/build-kb.mjs
+
       - name: Commit and push (if changed)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs
+          git add docs server/data
           if git diff --cached --quiet; then
             echo "### 源文档无变化" >> "$GITHUB_STEP_SUMMARY"
           else

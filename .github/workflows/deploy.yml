@@ -58,6 +58,9 @@ jobs:
         env:
           # Waline 服务端地址(在仓库 Settings → Secrets → Actions 配置)
           WALINE_SERVERURL: ${{ secrets.WALINE_SERVERURL }}
+          # 文档助手后端地址(可选; 不配置时前端探测同源 /api/assistant,
+          # GitHub Pages 无后端则自动显示"未配置"提示)
+          ASSISTANT_API: ${{ secrets.ASSISTANT_API }}
 
       - uses: actions/configure-pages@v5
         with:
