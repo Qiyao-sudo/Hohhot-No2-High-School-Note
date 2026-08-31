@@ -22,7 +22,7 @@ import HomeHero from './.vitepress/theme/HomeHero.vue'
 </header>
 <p class="doc-intro-motto">今天拼搏在二中，明天是建设祖国的先锋</p>
 <ul class="doc-intro-notes">
-<li>文档已开<strong><mark>通全员可编辑权</mark></strong>限，欢迎各位学长学姐补充（为了给大家更为立体的观点，注意不要删除文档中已有的内容）</li>
+<li>文档已开通<strong><mark>全员可编辑权限</mark></strong>，欢迎各位学长学姐补充（为了给大家更为立体的观点，注意不要删除文档中已有的内容）</li>
 <li><strong><mark>有问题可在文末留言区留言，会有人及时解答</mark></strong></li>
 <li><strong><mark>感谢各位二中毕业生和在校生对本项目建设提供的大力支持</mark></strong></li>
 <li><strong><mark>部分文字和图片引用了新生群同学的聊天记录，已标注，在此对他们表示致谢。如有未标注到的地方请谅解，并在后面及时补充。</mark></strong></li>

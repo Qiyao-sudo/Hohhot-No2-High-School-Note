@@ -15,17 +15,17 @@ title: 新生须知
 
 ### 关于新生须知
 
-<span style="color:#9a0000">01 初中校领取通知</span><mark>书</mark>
+<span style="color:#9a0000">01 初中校领取通知书</span>
 
-7月27日起，携<span style="color:#9a0000">带身份证+中考准考</span>证，前<span style="color:#9a0000">往本人初中毕业学</span>校领取录取通知书与《给新生的一封信》。 未在初中校领到通知书的同学，可直接到呼伦校区东门值班室领取，东门值班室电话<span style="color:#9a0000">：0471-6536934</span><mark>。</mark>
+7月27日起，携带<span style="color:#9a0000">身份证+中考准考证</span>，前往<span style="color:#9a0000">本人初中毕业学校</span>领取录取通知书与《给新生的一封信》。 未在初中校领到通知书的同学，可直接到呼伦校区东门值班室领取，东门值班室电话：<span style="color:#9a0000">0471-6536934。</span>
 
-<span style="color:#9a0000">02 到校领取新生全套资料</span><mark>包</mark>
+<span style="color:#9a0000">02 到校领取新生全套资料包</span>
 
-<span style="color:#9a0000">8月3日17：00--18:2</span>0，本人持录取通知书和身份证到各自录取的校区领取新生资料包。
+<span style="color:#9a0000">8月3日17：00--18:20</span>，本人持录取通知书和身份证到各自录取的校区领取新生资料包。
 
-<span style="color:#9a0000">03 新生统一报到时</span><mark>间</mark>
+<span style="color:#9a0000">03 新生统一报到时间</span>
 
-<span style="color:#9a0000">8月23日上午8:0</span>0到对应校区班级完成现场报到。 逾期一周未到校报<strong>到</strong>”，视<span style="color:#9a0000">作自动放弃入学资</span>格，学校不再保留学籍<mark>。</mark>
+<span style="color:#9a0000">8月23日上午8:00</span>到对应校区班级完成现场报到。 逾期一周未到校报到<strong>”</strong>，视作<span style="color:#9a0000">自动放弃入学资格</span>，学校不再保留学籍。
 
 
 ### 关于暑假及新学期工作安排（2026）
@@ -53,7 +53,7 @@ title: 新生须知
 
 <strong>军训随时休息，压力不是很大</strong>
 
-<strong>每日军训后进大会议室听讲座，可能会因为劳累和天气产生不适，及时告知班主任，可以出去休</strong>息
+<strong>每日军训后进大会议室听讲座，可能会因为劳累和天气产生不适，及时告知班主任，可以出去休息</strong>
 
 ![](/images/9775916f7171b94e.jpg)
 
@@ -96,7 +96,7 @@ title: 新生须知
 
 <strong>金川：全部统招@</strong>
 
-<strong><mark>录取通知书会放到大家的初中或送至家</mark>中，接到通知后，请前往各位所在初中领取。</strong>
+<strong><mark>录取通知书会放到大家的初中或送至家中</mark>，接到通知后，请前往各位所在初中领取。</strong>
 
 <strong>按时按照通知书上的时间去报道。</strong>
 
@@ -156,4 +156,4 @@ title: 新生须知
 
 [呼和浩特市第二中学校校服订购指南 24.8.19](https://docs.qq.com/pdf/DYkZwcFJvZk1sSHpW)
 
-> <mark>根据学<strong><span style="color:#326fba">生反应，2026级新生校服质量特别差，新生也可在卡帕小程序上购买由卡帕生产的校服</span></strong></mark>
+> <mark>根据学生<strong><span style="color:#326fba">反应，2026级新生校服质量特别差，新生也可在卡帕小程序上购买由卡帕生产的校服</span></strong></mark>
