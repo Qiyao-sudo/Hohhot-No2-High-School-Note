@@ -34,6 +34,11 @@ DeepSeek API Key 在[开放平台](https://platform.deepseek.com)注册后创建
 
 ## 二、生产部署
 
+> **国内推荐：腾讯云开发 CloudBase 全托管**——前端静态托管 + 助手后端云托管
+> （`server/Dockerfile` 已备好，SSE 已适配云托管网关）+ Waline 同环境，支持自有域名
+> ICP 备案，无需服务器运维。完整步骤见
+> [国内全托管部署指南](cloudbase-deploy.md)。下面两个方案适合海外/镜像/自建服务器场景。
+
 ### 方案一（推荐）：Vercel 同项目部署
 
 本仓库已含 `api/assistant/[...route].js`（Vercel Serverless 函数）。**前端镜像所在的

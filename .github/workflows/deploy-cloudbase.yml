@@ -1,0 +1,55 @@
+name: Deploy CloudBase
+
+# 国内全托管部署: 前端 → 云开发静态网站托管, 助手后端 → 云托管(CloudBase Run)
+# 手动触发(仓库 Actions → Deploy CloudBase → Run workflow)。
+# 首次使用前先在云开发控制台按 docs/cloudbase-deploy.md 完成一次性配置。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TCB_ENV_ID: ${{ secrets.TCB_ENV_ID }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # 静态站构建: CloudBase 静态托管在根路径 → BASE=/;
+      # 助手后端地址指向云托管服务公网域名(见部署指南步骤 2)
+      - name: Build site
+        run: npm run build
+        env:
+          BASE: /
+          WALINE_SERVERURL: ${{ secrets.WALINE_SERVERURL }}
+          ASSISTANT_API: ${{ secrets.CLOUDBASE_ASSISTANT_URL }}
+
+      - name: Login CloudBase CLI
+        run: |
+          npm i -g @cloudbase/cli
+          tcb login --apiKeyId "${{ secrets.TCB_API_KEY_ID }}" --apiKey "${{ secrets.TCB_API_KEY }}"
+
+      # 前端 → 静态网站托管(根路径)
+      - name: Deploy static site
+        run: tcb hosting deploy docs/.vitepress/dist / -e "$TCB_ENV_ID"
+
+      # 助手后端 → 云托管: 构建上下文 server/, Dockerfile 在 server/ 根,
+      # 容器型服务必须指定 --port(与 Dockerfile EXPOSE 一致)。
+      # DEEPSEEK_API_KEY 等敏感环境变量在控制台配置, CLI 只发新版本。
+      - name: Deploy assistant service
+        run: tcb cloudrun deploy -e "$TCB_ENV_ID" -s assistant --source server --port 8787 --force --yes
+
+      - name: Verify
+        run: |
+          echo "静态站: https://$TCB_ENV_ID.tcloudbase.com (自定义域名见指南)"
+          echo "助手健康检查: ${{ secrets.CLOUDBASE_ASSISTANT_URL }}/health"

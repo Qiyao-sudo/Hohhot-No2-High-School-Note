@@ -101,6 +101,14 @@ WALINE_SERVERURL=https://<你的waline>.vercel.app npm run build
 > 各自监听 main 分支构建，内容永远与源文档同步。GitHub 仓库仍是同步中枢
 > （抓取源文档 + 自动提交），不会因国内部署而改变。
 
+### 云开发 CloudBase 全托管（含文档助手后端）
+
+想要自有域名 + ICP 备案 + 免服务器运维，可把整站迁到腾讯云开发：
+静态托管（前端）+ 云托管（文档助手后端）+ Waline（已有，同环境）。
+云开发环境可直接作为首次备案资源。完整步骤见
+[国内全托管部署指南](docs/cloudbase-deploy.md)，仓库已带
+`deploy-cloudbase.yml` 一键构建部署工作流。
+
 ### 备选：Vercel 镜像
 
 用 GitHub 账号登录 [Vercel](https://vercel.com) → 导入本仓库 → Deploy
