@@ -212,7 +212,12 @@ async function doAsk(q: string) {
   try {
     const res = await fetch(`${apiBase}/ask`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        // 腾讯云托管(CloudBase Run)网关要求 SSE 请求显式声明该 Accept,
+        // 否则长连接会在 60 秒被掐断
+        Accept: 'text/event-stream',
+      },
       body: JSON.stringify({ messages: history, stream: true }),
       signal: abortCtrl.signal,
     })

@@ -190,16 +190,37 @@ export async function handle(req, res) {
       res.flushHeaders?.()
       send('meta', { sources: sources.map(toPublicSource), model })
 
+      // 心跳保活: 模型思考/生成间歇期发注释行, 防止网关(腾讯云托管等)
+      // 因连接空闲超时掐断 SSE; 客户端已断开时停止写入
+      let clientGone = false
+      const heartbeat = setInterval(() => {
+        try {
+          if (!clientGone && !res.writableEnded) res.write(': ping\n\n')
+        } catch {
+          /* 连接已断, 等 req close 清理 */
+        }
+      }, 15000)
+      req.on('close', () => {
+        clientGone = true
+        clearInterval(heartbeat)
+      })
+
       let usage = null
       try {
         for await (const p of streamChat({ messages: modelMessages })) {
+          if (clientGone) break
           if (p.type === 'delta') send('delta', { t: p.text })
           else usage = p.usage
         }
-        send('done', { usage })
+        if (!clientGone) send('done', { usage })
       } catch (e) {
-        if (e?.name === 'AbortError') send('done', { aborted: true })
-        else send('error', { message: e instanceof UpstreamError ? e.message : '生成回答时出错, 请稍后重试。' })
+        if (!clientGone) {
+          if (e?.name === 'AbortError') send('done', { aborted: true })
+          else send('error', { message: e instanceof UpstreamError ? e.message : '生成回答时出错, 请稍后重试。' })
+        }
+      } finally {
+        clearInterval(heartbeat)
+        req.removeAllListeners('close')
       }
       res.end()
       return
