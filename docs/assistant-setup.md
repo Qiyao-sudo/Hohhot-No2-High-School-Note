@@ -90,7 +90,11 @@ location /api/assistant/ {
 
 ```bash
 # 1. 构建同源版前端(不设 ASSISTANT_API 即默认 /api/assistant)
-BASE=/ npm run build
+# ⚠️ Git Bash(Windows)注意: 裸 / 会被 MSYS 转成 Git 安装目录,
+#    必须加 MSYS_NO_PATHCONV=1, 否则产物里资源链接全是
+#    "C:/Program Files/Git/assets/..." → 整站样式丢失!
+MSYS_NO_PATHCONV=1 BASE=/ npm run build    # Git Bash 用这个
+BASE=/ npm run build                        # Linux/macOS/PowerShell 用这个
 mkdir deploy && cp -r server deploy/ && mkdir deploy/dist && cp -r docs/.vitepress/dist/. deploy/dist/
 
 # 2. 服务器上(以 C:\hs2 为例, Windows 计划任务/RSS/Linux systemd 守护)
