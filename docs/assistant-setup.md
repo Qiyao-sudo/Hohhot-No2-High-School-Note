@@ -83,6 +83,26 @@ location /api/assistant/ {
 
 然后把前端的 `ASSISTANT_API` 指向 `https://你的域名/api/assistant`。
 
+### 方案三：云服务器单进程同源部署（无需 Nginx）
+
+`server/` 自带静态托管：把构建产物放在 `server/../dist`（或设 `STATIC_ROOT`），
+**一个 Node 进程同时服务整站和 API**，前端用同源默认值 `/api/assistant`，零跨域、零 Nginx：
+
+```bash
+# 1. 构建同源版前端(不设 ASSISTANT_API 即默认 /api/assistant)
+BASE=/ npm run build
+mkdir deploy && cp -r server deploy/ && mkdir deploy/dist && cp -r docs/.vitepress/dist/. deploy/dist/
+
+# 2. 服务器上(以 C:\hs2 为例, Windows 计划任务/RSS/Linux systemd 守护)
+cd C:\hs2\server
+node --env-file=.env index.mjs   # .env 写 DEEPSEEK_API_KEY=... PORT=80
+```
+
+- 构建时**不要设 `ASSISTANT_API`**（默认同源 `/api/assistant` 即命中本进程）；
+- `--env-file` 需要 Node 20.6+（`--env-file-if-exists` 需要 22.9+，注意版本）；
+- 静态资源带哈希的 `assets/*` 自动长缓存，HTML 协商缓存；
+- 更新站点 = 重新构建覆盖 `dist/` + 重启进程。
+
 ## 三、环境变量一览
 
 | 变量 | 默认值 | 作用域 |
