@@ -1,18 +1,21 @@
 // ============================================================
 // 文档助手 HTTP 服务(零依赖, Node 18+)
-// 同一段代码两种宿主:
-//   - 独立部署: node server/index.mjs (PORT 环境变量, 默认 8787)
+// 同一段代码三种宿主:
+//   - 云服务器同源部署: node server/index.mjs (PORT=80, 默认托管 ../dist 静态站)
+//   - 独立部署后端: node server/index.mjs (PORT 环境变量, 默认 8787)
 //   - Vercel Serverless: api/assistant/[...route].js → /api/assistant/*
 //
 // 路由:
 //   GET  /health   健康检查与配置状态(前端据此显示降级提示)
 //   POST /search   纯检索(不调模型): { query } → 结果卡片
 //   POST /ask      RAG 问答: { messages, stream? } → SSE 流式回答
+//   GET  /*        静态文件(设 STATIC_ROOT 时启用, 见 lib/static.mjs)
 // ============================================================
 import { deepseekConfig, streamChat, UpstreamError } from './deepseek.mjs'
 import { search, snippetFor, kbStats } from './kb.mjs'
 import { rateLimit, clientIp } from './ratelimit.mjs'
 import { buildSystemPrompt } from './prompt.mjs'
+import { serveStatic, staticRoot } from './static.mjs'
 
 const VERSION = '1.0.0'
 const HOUR = 3600_000
@@ -225,6 +228,9 @@ export async function handle(req, res) {
       res.end()
       return
     }
+
+    // ---------------------------------------------------------- 静态文件
+    if (serveStatic(req, res, pathname)) return
 
     sendJson(res, 404, { error: `未知接口: ${req.method} ${pathname}` })
   } catch (e) {
