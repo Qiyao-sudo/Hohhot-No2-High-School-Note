@@ -10,12 +10,15 @@ import { kbStats } from './lib/kb.mjs'
 import { staticRoot } from './lib/static.mjs'
 
 const port = Number(process.env.PORT || 8787)
+// 监听地址: 默认 0.0.0.0(所有网卡); Nginx 反代场景建议 HOST=127.0.0.1,
+// 让应用端口不直接暴露公网
+const host = process.env.HOST || '0.0.0.0'
 const cfg = deepseekConfig()
 const kb = kbStats()
 const webRoot = staticRoot()
 
 const server = http.createServer(handle)
-server.listen(port, () => {
+server.listen(port, host, () => {
   console.log(`[assistant] 文档助手后端已启动: http://localhost:${port}`)
   console.log(`[assistant] 模型: ${cfg.model} | API Key: ${cfg.apiKey ? '已配置' : '❌ 未配置(请在 .env 或环境变量中设置 DEEPSEEK_API_KEY)'}`)
   console.log(`[assistant] 知识库: ${kb.pages} 页 / ${kb.chunks} 块 (生成于 ${kb.generatedAt})`)
