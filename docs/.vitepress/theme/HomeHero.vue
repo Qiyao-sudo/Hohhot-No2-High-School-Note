@@ -98,7 +98,7 @@ const groups = [
     <section class="home-cta">
       <div class="home-cta-inner">
         <p>
-          有问题？在留言处匿名提问（只需昵称，无需注册登录），会有学长学姐及时解答。
+          有问题？在源文档留言处匿名提问，会有学长学姐及时解答。
         </p>
         <a class="btn-primary" :href="withBase('/messages')">前往留言处</a>
       </div>
