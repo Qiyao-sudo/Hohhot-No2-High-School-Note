@@ -1,6 +1,7 @@
 <script setup lang="ts">
-// 全站页脚统计条: 建站日期 + 实时运行时长 + 访客统计(自建后端, 按 IP 去重)。
-// 访客数来自同源后端 GET /api/assistant/visit(server/lib/visits.mjs 计数);
+// 全站页脚统计条: 建站日期 + 实时运行时长 + 访问计数(自建后端, PV 口径)。
+// 每次页面访问 +1(同 IP 也累计, 同一访客每分钟最多计一次防刷新),
+// 数据来自同源后端 GET /api/assistant/visit(server/lib/visits.mjs 计数);
 // 后端未部署/不可达时访问统计整行隐藏, 不影响其余内容。
 // 运行时长含秒且持续跳动, 只在客户端挂载后渲染, 避免 SSR 水合不一致。
 import { onMounted, onUnmounted, ref } from 'vue'
@@ -40,8 +41,8 @@ onMounted(async () => {
   try {
     const res = await fetch(`${apiBase}/visit`)
     const d = await res.json()
-    if (d.ok && d.total > 0) {
-      visitors.value = d.total
+    if (d.ok && d.pv > 0) {
+      visitors.value = d.pv
       todayVisitors.value = d.today
       statsOff.value = false
     }
@@ -63,8 +64,8 @@ onUnmounted(() => {
       </template>
     </p>
     <p class="site-stats-line muted" :class="{ off: statsOff }">
-      <span title="按 IP 去重统计">
-        累计 {{ visitors.toLocaleString() }} 位访客观临
+      <span title="每次页面访问计一次, 同一访客每分钟最多计一次">
+        累计 {{ visitors.toLocaleString() }} 次访问
       </span>
       <span class="dot" aria-hidden="true">·</span>
       <span>今日 {{ todayVisitors.toLocaleString() }}</span>
