@@ -678,8 +678,8 @@ def main():
             lines.append(
                 "\n---\n\n## 网站留言区\n\n"
                 "上方为[源文档留言处](https://docs.qq.com/doc/"
-                + DOC_ID + ")的同步内容，下方为本站评论区。"
-                "网站留言会定期由维护者整理回源文档留言区。\n"
+                + DOC_ID + ")的同步内容。"
+                "本站不设置留言区，如有需要请访问[源文档留言处](https://docs.qq.com/doc/" + DOC_ID + ")\n"
             )
         (DOCS_DIR / page["file"]).write_text("\n".join(lines), encoding="utf-8")
         written.append(page["file"])

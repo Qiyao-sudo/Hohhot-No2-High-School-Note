@@ -47,11 +47,11 @@ onMounted(() => {
       无需注册登录，填写<span class="required">昵称</span>（必填）和
       <span class="optional">邮箱</span>（选填，用于接收回复通知）即可留言。
     </p>
-    <p v-else class="waline-off">
+    <!-- <p v-else class="waline-off">
       评论区后端尚未配置，站点其余功能不受影响。维护者可参考本站
       <a href="/waline-setup">评论后端部署指南</a>（腾讯云开发 CloudBase，
       约 5 分钟）完成配置。
-    </p>
+    </p> -->
     <div v-if="configured" ref="el"></div>
   </div>
 </template>

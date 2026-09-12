@@ -127,4 +127,4 @@ comment: true
 
 ## 网站留言区
 
-上方为[源文档留言处](https://docs.qq.com/doc/DYm5PeUxOVmdEZmxs)的同步内容，网站不设置评论区，如有需要请访问[源文档留言处](https://docs.qq.com/doc/DYm5PeUxOVmdEZmxs)
+上方为[源文档留言处](https://docs.qq.com/doc/DYm5PeUxOVmdEZmxs)的同步内容。本站不设置留言区，如有需要请访问[源文档留言处](https://docs.qq.com/doc/DYm5PeUxOVmdEZmxs)
