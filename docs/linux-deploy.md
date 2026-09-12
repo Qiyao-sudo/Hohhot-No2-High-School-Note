@@ -1,115 +1,64 @@
-# 轻量服务器(Linux)部署指南 · PM2 + Nginx
+# 轻量服务器(Linux)部署指南 · 宝塔 + PM2 + 本机推送
 
-适合已有一台腾讯云轻量应用服务器(或任意 Linux 云服务器)、且**已装好
-Node 20+ / pm2 / git**(跑过其他 PM2 项目)的情况。整站 = 一个 Node 进程
-(静态站 + 文档助手 API 同源), Nginx 只做反向代理 + HTTPS, 内存占用极小(≈80MB)。
+部署模型: **本机一条命令发布**(`npm run deploy`), 服务器不碰代码、不需要 git、
+不需要访问 GitHub——本地构建 → SFTP 直传 → 原子切换 → pm2 热重载 → 健康检查
+(失败自动回滚)。服务器端一次性准备只要 5 分钟。
 
 ```
-浏览器 ──► Nginx(:80/:443, 域名+SSL) ──反代──► 127.0.0.1:8787
-                                                └─ pm2 守护 node server/index.mjs
-                                                   ├─ 整站静态文件(../dist)
-                                                   └─ /api/assistant/*(SSE 流式问答)
+本机(有本仓库代码 + .env)
+  └─ npm run deploy
+       ├─ 同步腾讯文档(可 --no-sync 跳过)
+       ├─ BASE=/ 构建(server + dist)
+       └─ SFTP 上传 → 服务器原子切换 → pm2 热重载 → 健康检查
+服务器(宝塔 Linux)
+  └─ Nginx(:80/:443) ──反代──► 127.0.0.1:8787(pm2 守护 node, 静态站+助手API同源)
 ```
 
-> Windows 服务器上那套同源部署等价迁移到 Linux; 亦可参考
- > [assistant-setup.md](assistant-setup.md) 的方案三说明。
+## 0. 前置条件
 
-## 0. 前置检查
+**服务器**: 宝塔面板 + Node 20 与 pm2(宝塔"PM2 管理器"或 `npm i -g pm2`); 不需要 git。
+
+**本机**: 本仓库代码、Python 3 + paramiko(`pip install paramiko`)、npm。
+
+## 1. 服务器一次性准备(约 5 分钟)
+
+SSH 登录服务器:
 
 ```bash
-node -v    # ≥ 20
-pm2 -v     # 已全局安装
-git --version
-ss -tlnp | grep -E ':(80|443|8787)\b'   # 80/443 若被占用说明 Nginx 已在跑(正常); 8787 应空闲
+mkdir -p /www/hs2/deploy /www/hs2/logs
+
+# pm2 开机自启(只做一次; 屏幕输出的 sudo 命令原样执行)
+pm2 startup
 ```
 
-## 1. 目录规划(运行目录与源码分离)
+> 端口: 控制台安全组放行 80/443; **不要放行 8787**(只供本机 Nginx 访问)。
 
+## 2. 本机配置 + 首次部署
+
+在本机仓库根目录的 `.env`(没有就 `cp .env.example .env`)里填:
+
+```ini
+DEEPSEEK_API_KEY=sk-你的key      # 助手用(会自动注入服务器)
+DEPLOY_HOST=服务器IP
+DEPLOY_USER=root
+DEPLOY_PASS=服务器SSH密码        # 或 DEPLOY_KEY=~/.ssh/id_rsa
+DEPLOY_ROOT=/www/hs2
 ```
-/www/hs2/
-├── repo/                 # git 源码(可随时销毁重建)
-├── deploy/
-│   ├── server/           # 运行中的后端(从 repo 拷贝; .env 只在这里, 不进 git)
-│   └── dist/             # 前端构建产物
-├── logs/                 # pm2 与同步脚本日志
-├── ecosystem.config.js   # pm2 配置
-└── sync.sh               # 定时同步脚本(第 6 节)
-```
 
-这样分离的好处: 同步/构建失败时线上目录不受影响; `.env`(含 API Key)永不出现在 git 里。
-
-## 2. 首次部署
+然后一条命令:
 
 ```bash
-mkdir -p /www/hs2 && cd /www/hs2
-
-# 2.1 拉源码(公开仓库免认证)
-git clone https://github.com/Qiyao-sudo/Hohhot-No2-High-School-Note.git repo
-cd repo
-
-# 2.2 构建(必须 BASE=/ 根路径; 国内源加速可选)
-npm config set registry https://registry.npmmirror.com
-BASE=/ npm install --no-audit --no-fund
-BASE=/ npm run build
-# ✔ 验证: 产物首页的资源引用是根路径
-grep -o 'href="[^"]*style[^"]*css"' docs/.vitepress/dist/index.html
-#   应显示 href="/assets/style.xxxx.css" —— 若出现别的路径前缀说明 BASE 没生效
-
-# 2.3 摆运行目录
-mkdir -p ../deploy/server ../deploy/dist ../logs
-cp -r server/. ../deploy/server/
-cp -r docs/.vitepress/dist/. ../deploy/dist/
-
-# 2.4 写环境变量(改成你的 key; 权限收紧)
-cat > ../deploy/server/.env << 'EOF'
-DEEPSEEK_API_KEY=sk-你的key
-DEEPSEEK_MODEL=deepseek-v4-flash
-PORT=8787
-HOST=127.0.0.1
-EOF
-chmod 600 ../deploy/server/.env
+npm run deploy
 ```
 
-## 3. PM2 启动
+它会自动完成: 同步文档 → 构建 → 打包上传 → 在服务器生成 `ecosystem.config.js`
+(密钥即本机 .env 的 key) → 首次自动 `pm2 start`(进程名 `hs2`) → 健康检查。
+结束时看到绿色的 `✓ 部署成功` 即可。
 
-```bash
-cd /www/hs2
-cat > ecosystem.config.js << 'EOF'
-module.exports = {
-  apps: [{
-    name: 'hs2',
-    script: 'index.mjs',
-    cwd: '/www/hs2/deploy/server',
-    env: {
-      // 与 .env 二选一即可; 两处都写则以这里为准(pm2 注入优先)
-      DEEPSEEK_API_KEY: 'sk-你的key',
-      PORT: 8787,
-      HOST: '127.0.0.1',          // 只监听本机, 由 Nginx 对外
-    },
-    max_memory_restart: '400M',   // 内存保险丝
-    out_file: '/www/hs2/logs/out.log',
-    error_file: '/www/hs2/logs/error.log',
-    merge_logs: true,
-    time: true,
-  }]
-}
-EOF
-pm2 start ecosystem.config.js
+> 提示: 服务器首次跑起来后, 建议在服务器执行一次 `pm2 save`,
+> 让重启服务器后进程自动恢复。若提示缺 `DEEPSEEK_API_KEY`, 说明本机 .env 没填 key。
 
-# ✔ 验证
-curl http://127.0.0.1:8787/health
-#   期望 {"ok":true,...,"configured":true,...}
-curl -I http://127.0.0.1:8787/ | head -1   # 期望 200
-
-# 开机自启(已注册过 pm2 startup 的机器跳过第一条)
-pm2 startup    # 按屏幕提示复制执行输出的 sudo 命令
-pm2 save       # 保存进程列表, 重启服务器自动拉起
-```
-
-> 机器上已有其他 pm2 项目时互不影响: `pm2 ls` 里 hs2 与它们并列;
-> `pm2 save` 会把所有进程一起存盘, 别用 `pm2 delete` 动别人的进程即可。
-
-## 4. Nginx 反向代理(含 SSE 关键配置)
+## 3. Nginx 反向代理(含 SSE 关键配置)
 
 ### 宝塔面板方式
 
@@ -154,14 +103,10 @@ server {
 nginx -t && systemctl reload nginx
 ```
 
-### 防火墙
-
-- 轻量/云控制台安全组: 放行 **80、443**; **不要放行 8787**(应用只对本机);
-- 宝塔"安全"页或系统防火墙(ufw/firewalld)同理。
-
-## 5. 验收清单
+## 4. 验收清单
 
 ```bash
+# 服务器上
 pm2 ls                                    # hs2 状态 online
 curl http://127.0.0.1:8787/health         # configured:true
 curl -I http://127.0.0.1/ | head -1       # 经 Nginx: 200
@@ -169,99 +114,60 @@ curl -I http://127.0.0.1/ | head -1       # 经 Nginx: 200
 
 浏览器打开 `http://服务器IP/`(或域名):
 - 首页/文档页样式正常(无"裸 HTML"感);
-- 导航「文档助手」提问一句: 回答**逐字流式**出现(一坨一次吐出 = 第 4 节缓冲没关);
+- 导航「文档助手」提问一句: 回答**逐字流式**出现(一坨一次吐出 = 第 3 节缓冲没关);
 - 回答里的 `[[n]]` 角标和"来源"卡片可点击, 跳到对应文档锚点。
 
-## 6. 定时自动同步 GitHub(每 6 小时)
+## 5. 日常更新(以后只做这一件事)
 
 ```bash
-cat > /www/hs2/sync.sh << 'EOF'
-#!/bin/bash
-# GitHub main 有更新才: 拉码→构建→摆目录→pm2 reload→健康检查
-# 任一步失败立即退出, 线上保持旧版本(server.old/dist.old 保底)
-set -u
-ROOT=/www/hs2
-LOG=$ROOT/logs/sync.log
-say() { echo "[$(date '+%F %T')] $*" >> $LOG; }
-
-# 30 分钟防重入
-exec 9>/tmp/hs2-sync.lock
-flock -n 9 || { say 'another sync running, skip'; exit 0; }
-
-cd $ROOT/repo || { say 'no repo'; exit 1; }
-git fetch origin main --quiet
-[ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] && { say "no change"; exit 0; }
-say "update -> $(git rev-parse --short origin/main)"
-git reset --hard origin/main --quiet || { say 'reset failed'; exit 1; }
-
-BASE=/ npm install --no-audit --no-fund --registry=https://registry.npmmirror.com >>$LOG 2>&1 \
-  || { say 'npm install failed'; exit 1; }
-BASE=/ npm run build >>$LOG 2>&1 || { say 'build failed'; exit 1; }
-say 'build ok'
-
-# 摆 server(保 .env)与 dist(旧版保底)
-cp $ROOT/deploy/server/.env /tmp/hs2.env
-rm -rf $ROOT/deploy/server-new && mkdir -p $ROOT/deploy/server-new
-cp -r server/. $ROOT/deploy/server-new/
-mv /tmp/hs2.env $ROOT/deploy/server-new/.env && chmod 600 $ROOT/deploy/server-new/.env
-
-rm -rf $ROOT/deploy/dist.old
-[ -d $ROOT/deploy/dist ] && mv $ROOT/deploy/dist $ROOT/deploy/dist.old
-mkdir -p $ROOT/deploy/dist
-cp -r docs/.vitepress/dist/. $ROOT/deploy/dist/
-
-rm -rf $ROOT/deploy/server.old
-[ -d $ROOT/deploy/server ] && mv $ROOT/deploy/server $ROOT/deploy/server.old
-mv $ROOT/deploy/server-new $ROOT/deploy/server
-
-pm2 reload hs2 >>$LOG 2>&1 || pm2 restart hs2 >>$LOG 2>&1
-sleep 3
-if curl -fsS http://127.0.0.1:8787/health | grep -q '"ok":true'; then
-  rm -rf $ROOT/deploy/dist.old $ROOT/deploy/server.old
-  say "deployed $(git rev-parse --short HEAD) OK"
-else
-  say 'HEALTH CHECK FAILED — 旧版保留在 server.old/dist.old, 可手工切回'
-  exit 1
-fi
-EOF
-chmod +x /www/hs2/sync.sh
-
-# 注册定时: 二选一
-crontab -e
-#   0 */6 * * * bash /www/hs2/sync.sh
-# 或宝塔: 计划任务 → Shell 脚本, 周期"每 6 小时", 内容 bash /www/hs2/sync.sh
-
-# 手动跑一次验证整链路
-bash /www/hs2/sync.sh && tail -3 /www/hs2/logs/sync.log
+npm run deploy               # 完整: 同步文档 + 构建 + 推送 + 热重载
+npm run deploy -- --no-sync  # 文档没更新, 跳过腾讯文档抓取
+npm run deploy -- --skip-build  # 只重推现有产物(改了服务器配置之类)
 ```
 
-## 7. 日常运维速查
+部署全程**原子切换**: 旧版本自动保底在 `deploy/server.old` 与 `deploy/dist.old`,
+健康检查不过自动回滚, 线上不会出现半新半旧状态。
 
-| 场景 | 命令 |
+## 6. 运维速查
+
+| 场景 | 命令(服务器上) |
 | --- | --- |
 | 看状态/日志 | `pm2 ls` / `pm2 logs hs2 --lines 200 --nostream` |
-| 改环境变量后生效 | `pm2 restart hs2 --update-env`(改的是 ecosystem) 或改 `.env` 后 `pm2 restart hs2` |
-| 立即同步一次 | `bash /www/hs2/sync.sh && tail -3 /www/hs2/logs/sync.log` |
-| 出问题回滚 | `cd /www/hs2/deploy && rm -rf server dist && mv server.old server && mv dist.old dist && pm2 reload hs2` |
+| 重启服务 | `pm2 reload hs2` |
+| 手工回滚上一版 | `cd /www/hs2/deploy && rm -rf server dist && mv server.old server && mv dist.old dist && pm2 reload hs2` |
 | 清 pm2 旧日志 | `pm2 flush hs2` |
 | 内存/CPU 面板 | `pm2 monit` |
+| 重启服务器后自启 | 首次部署后执行过 `pm2 save` 即自动恢复 |
 
-## 8. 故障排查
+## 7. 故障排查
 
 | 现象 | 原因与处理 |
 | --- | --- |
-| 502 Bad Gateway | pm2 进程没起来: `pm2 ls` 看 errored/stopped, `pm2 logs hs2` 查报错; 确认 8787 端口: `ss -tlnp | grep 8787` |
-| AI 回答一坨一次吐出, 不流式 | Nginx 缓冲没关: 检查第 4 节 `proxy_buffering off` 是否真的写进生效的配置(`nginx -T | grep proxy_buffering`) |
-| 首页样式全丢(裸 HTML) | 构建时没带 `BASE=/`: `grep -o 'href="[^"]*style[^"]*css"' repo/docs/.vitepress/dist/index.html` 检查引用是否 `/assets/` 开头, 重新带 `BASE=/ npm run build` |
-| 助手页显示"后端尚未配置" | `curl 127.0.0.1:8787/health` 看 `configured` 是否 true; false = `.env`/ecosystem 里 key 没配上; 注意 pm2 环境变量优先于 `.env` |
-| 问答报"提问次数有点多" | 每.IP 每小时限流(默认 30 次), 下一小时自动恢复; 需调整改 `ASSISTANT_RATE_ASK` 环境变量 |
-| sync.sh 一直 no change | 正常: 远端 main 无新提交; 强制重建可 `cd /www/hs2/repo && git reset --hard origin/main` 后手动跑一遍 |
-| 重启服务器后站没了 | 没做 `pm2 save` / `pm2 startup`: 补做后 `pm2 resurrect` 验证 |
+| 本机 deploy 报连接/认证失败 | 核对本机 `.env` 的 `DEPLOY_HOST/USER/PASS`; 服务器 22 端口与密码正确性 |
+| deploy 上传很慢 | 产物约 20MB, 受本地上行带宽限制; 重复部署可 `--skip-build` 只推变更后的包 |
+| deploy 健康检查失败自动回滚 | 服务器 `pm2 logs hs2` 看报错; 多为 8787 被占用(`ss -tlnp \| grep 8787`)或内存不足 |
+| 502 Bad Gateway | pm2 进程没起来: `pm2 ls` / `pm2 logs hs2` |
+| AI 回答一坨一次吐出, 不流式 | Nginx 缓冲没关: `nginx -T \| grep proxy_buffering` 检查第 3 节配置是否生效 |
+| 首页样式全丢(裸 HTML) | 产物构建没带 `BASE=/`; 用 `npm run deploy` 全流程构建, 不要手动单独跑 build |
+| 助手页显示"后端尚未配置" | 本机 `.env` 的 `DEEPSEEK_API_KEY` 没填(它会注入服务器 ecosystem) |
+| 问答报"提问次数有点多" | 每 IP 每小时限流(默认 30 次), 下一小时自动恢复 |
+| 重启服务器后站没了 | 服务器上补执行 `pm2 save` 后 `pm2 resurrect` 验证 |
 
-## 9. 收尾与后续
+## 8. 从旧方案迁移的清理(一次性)
 
-- 本方案为站点**唯一正式部署端**; 迁移验证通过后, 其他临时部署(如按量计费的
-  Windows 云服务器)记得**关机或销毁**, 不跑也计费;
+若之前配过"服务器每 6 小时拉取 GitHub"的方案, 迁移到本机推送后清理:
+
+```bash
+crontab -e                       # 删除 sync.sh 那一行(宝塔则在 计划任务 里删除)
+rm -rf /www/hs2/repo /www/hs2/sync.sh /www/hs2/logs/sync.log
+```
+
+Git 仓库仍由 GitHub Actions 每日自动同步源文档并做构建验证(作为云端备份与
+代码主仓), 只是服务器不再从 GitHub 拉取, 一切更新经本机 `npm run deploy` 发布。
+
+## 9. 后续(可选)
+
 - 想上自有域名 + HTTPS: 买域名 → 腾讯云备案(轻量服务器**包年包月**即可作为
-  备案资源) → 域名解析到本机 → 宝塔站点 SSL 一键申请; 备案期间该域名不可访问,
-  不影响当前 IP 方式使用。
+  备案资源) → 解析到本机 → 宝塔站点 SSL 一键申请; 备案期间该域名不可访问,
+  不影响当前 IP 方式使用;
+- 退役的旧部署(如按量计费的 Windows 云服务器)记得**关机或销毁**, 不跑也计费。

@@ -13,17 +13,19 @@ GitHub 每日自动同步源文档，**宝塔面板（Linux + PM2 + Nginx）**�
 
 ```
 腾讯文档(全员可编辑)
-   │  每日 03:00 / 手动触发
+   │  本机 npm run deploy 时抓取(每日也有 GitHub Actions 云端备份)
    ▼
-GitHub Actions(sync_doc.py) ──commit/push──► GitHub main ◄──┐
-                                                │           │ 每 6 小时
-                                                ▼           │
-                                   服务器 sync.sh: git reset ┘
-                                   ├─ BASE=/ npm run build
-                                   └─ pm2 reload(静态站+API 一个进程)
+本机构建(BASE=/, server + dist) ──SFTP 直传──► 宝塔服务器 /www/hs2/deploy
+                                                │ 原子切换 + pm2 热重载 + 健康检查(失败自动回滚)
+                                                ▼
+                                   Nginx(:80/:443) ──反代──► node :8787
+                                   (静态站 + 文档助手 API 同源单进程)
 ```
 
-完整部署步骤（PM2 配置、Nginx SSE 反代、自动同步、回滚与故障排查）见
+- **发布**：本机一条命令 `npm run deploy`（同步文档 → 构建 → 推送 → 热重载）；
+- **云端备份**：GitHub Actions 每日同步源文档并做构建验证（服务器不依赖 GitHub）。
+
+完整部署步骤（服务器一次性准备、Nginx SSE 反代、回滚与故障排查）见
 **[docs/linux-deploy.md](docs/linux-deploy.md)**。
 
 ## 目录结构
@@ -40,6 +42,7 @@ GitHub Actions(sync_doc.py) ──commit/push──► GitHub main ◄──┐
 ├── scripts/
 │   ├── sync_doc.py          # 腾讯文档抓取 → Markdown 转换
 │   ├── build-kb.mjs         # docs/*.md → 助手知识库(server/data/kb.mjs)
+│   ├── deploy.py            # 本机一键推送部署(构建+上传+热重载+回滚)
 │   └── outline.json         # 源文档真实标题大纲(层级权威来源)
 ├── .github/workflows/
 │   ├── deploy.yml           # 定时/推送: 同步源文档并提交 + 构建验证
@@ -72,19 +75,17 @@ npm run assistant             # 起后端 :8787, 再 npm run dev 即可在前端
 | 文档助手 | 部署与配置见 [docs/linux-deploy.md](docs/linux-deploy.md) 与 [docs/assistant-setup.md](docs/assistant-setup.md)；DeepSeek API Key 只存服务器环境变量，不进 git |
 | 评论 | 按 [docs/waline-setup.md](docs/waline-setup.md) 部署 Waline，构建时注入 `WALINE_SERVERURL` 即启用；建议开启「先审后发」 |
 
-## 手动同步源文档
+## 手动同步源文档 / 发布
 
-源文档更新后想立即同步（不等每日定时）：仓库 **Actions → Manual Sync → Run workflow**。
-该工作流只抓取源文档并提交推送；推送 `main` 后服务器最多 6 小时自动跟进
-（或登服务器执行 `bash /www/hs2/sync.sh` 立即更新）。
-无内容变化时不产生提交。
+- **发布新版本**：本机执行 `npm run deploy`（自动同步最新文档 → 构建 → 推送服务器 → 热重载，详见 [docs/linux-deploy.md](docs/linux-deploy.md)）；
+- **只同步文档不发布**：仓库 **Actions → Manual Sync → Run workflow**（GitHub 云端备份更新，不影响线上）。
 
 ## 同步机制
 
 | 方向 | 方式 | 说明 |
 | --- | --- | --- |
-| 源文档 → GitHub | 自动（每日）/ 手动（workflow_dispatch） | `sync_doc.py` 抓取腾讯文档正文并生成各页面 |
-| GitHub → 服务器 | 自动（每 6 小时）/ 手动 | 服务器 `sync.sh` 拉取构建并热重启，失败保留旧版 |
+| 源文档 → 本机/GitHub | `npm run deploy` 时自动 / GitHub Actions 每日备份 | `sync_doc.py` 抓取腾讯文档正文并生成各页面 |
+| 本机 → 服务器 | `npm run deploy` 手动一键 | 原子切换 + 健康检查, 失败自动回滚 |
 | 网站留言 → 源文档 | 手动整理 | 维护者从 Waline 后台导出留言，粘贴回源文档"留言处" |
 
 腾讯文档没有公开写入 API，所以"网站 → 源文档"方向为半自动（导出+粘贴）。

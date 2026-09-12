@@ -9,7 +9,8 @@
     "build": "npm run build:kb && vitepress build docs",
     "dev": "vitepress dev docs",
     "preview": "vitepress preview docs",
-    "assistant": "node --env-file-if-exists=.env server/index.mjs"
+    "assistant": "node --env-file-if-exists=.env server/index.mjs",
+    "deploy": "python scripts/deploy.py"
   },
   "devDependencies": {
     "puppeteer-core": "^25.9.0",
