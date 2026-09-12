@@ -308,10 +308,12 @@ def download_images(images):
             print(f"  ✗ 下载失败 {url[:60]}: {exc}")
             dest.unlink(missing_ok=True)
             mapping.pop(url)
-    # 清理未被引用的旧图(格式迁移的 .jpg / 源文档删除的图), 防止目录膨胀
+    # 清理未被引用的同步图(格式迁移的 .jpg / 源文档删除的图), 防止目录膨胀。
+    # 只匹配同步生成的命名(16位hash), 手放的文件(如 hero.jpg)永不误删。
     keep = set(mapping.values())
+    synced_name = re.compile(r"^[0-9a-f]{16}\.(webp|jpg|part)$")
     for f in IMG_DIR.iterdir():
-        if f.is_file() and f.name not in keep:
+        if f.is_file() and synced_name.match(f.name) and f.name not in keep:
             f.unlink()
             print(f"  - 清理未引用图片 {f.name}")
     return mapping
