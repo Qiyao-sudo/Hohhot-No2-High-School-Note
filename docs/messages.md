@@ -103,7 +103,7 @@ comment: true
 
 ### 金川目前都有哪些社团？谢谢解答
 
-![](/images/2abf4fc88519dff1.jpg)
+![](/images/2abf4fc88519dff1.webp)
 
 
 ### 军训有什么有意思的活动嘛（谢谢解答）

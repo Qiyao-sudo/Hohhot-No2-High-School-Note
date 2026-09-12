@@ -19,6 +19,11 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
 
+# Windows 控制台 GBK 环境兜底: 输出用 UTF-8, 不可编码字符降级显示
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
+
 
 def load_env():
     try:
@@ -43,7 +48,11 @@ def die(msg):
 
 
 def sh(cmd, env_extra=None, check=True):
-    env = {**os.environ, **(env_extra or {})}
+    # PYTHONIOENCODING/PYTHONUTF8: Windows 管道下子进程默认 GBK,
+    # 脚本里的 ✓ 等字符会 UnicodeEncodeError, 强制 UTF-8
+    env = {**os.environ,
+           "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1",
+           **(env_extra or {})}
     # Windows 下 npm/python 是 .cmd, 统一走 shell
     r = subprocess.run(cmd, shell=True, env=env, capture_output=True, text=True,
                        encoding="utf-8", errors="replace")

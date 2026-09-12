@@ -14,11 +14,11 @@ title: 日常生活
 
 <strong>呼伦/如意</strong>
 
-![](/images/48f8d001d796d2b7.jpg)
+![](/images/48f8d001d796d2b7.webp)
 
 <strong>金川</strong>
 
-![](/images/49cc54c19dd1088d.jpg)
+![](/images/49cc54c19dd1088d.webp)
 
 <strong>金川校区课间操时间为社团活动时间</strong>
 
@@ -68,94 +68,94 @@ title: 日常生活
 
 夜自习管理
 
-![](/images/ee17e30433323ebc.jpg)
+![](/images/ee17e30433323ebc.webp)
 
 
 ### 关于基础设施
 
 呼伦
 
-![](/images/82e8a31d5c365482.jpg)
+![](/images/82e8a31d5c365482.webp)
 
-![](/images/d0ebc8e1facf70fd.jpg)
+![](/images/d0ebc8e1facf70fd.webp)
 
 <strong>班级有风扇（仅旧楼高三）均使用新桌椅</strong>
 
 <strong>A座教室(本图摄于2022年9月3日)</strong>
 
-![](/images/d283beaf6dd4eb90.jpg)
+![](/images/d283beaf6dd4eb90.webp)
 
 <strong>C座教室</strong>
 
-![](/images/f4e5f22cf2d19af8.jpg)
+![](/images/f4e5f22cf2d19af8.webp)
 
 <strong>共同课教室（有风扇）</strong>
 
-![](/images/77452de79f2830cd.jpg)
+![](/images/77452de79f2830cd.webp)
 
 <strong>图书馆无空调</strong>
 
-![](/images/56e14bf38aab9ca4.jpg)
+![](/images/56e14bf38aab9ca4.webp)
 
-![](/images/26ae30b106ba56c1.jpg)
+![](/images/26ae30b106ba56c1.webp)
 
 <strong>A座4楼配备公用电脑</strong>
 
-![](/images/55ff7b8ab835355d.jpg)
+![](/images/55ff7b8ab835355d.webp)
 
 <strong>实验楼（含艺术楼）</strong>
 
-![](/images/5634691eeded80a8.jpg)
+![](/images/5634691eeded80a8.webp)
 
 <strong>乒乓球室</strong>
 
-![](/images/0ffe8c0b85a2e8f4.jpg)
+![](/images/0ffe8c0b85a2e8f4.webp)
 
-![](/images/d3694c10b03231f1.jpg)
+![](/images/d3694c10b03231f1.webp)
 
 <strong>二层食堂</strong>
 
-![](/images/29d26a04db239b0e.jpg)
+![](/images/29d26a04db239b0e.webp)
 
-![](/images/aab523d45eb44894.jpg)
+![](/images/aab523d45eb44894.webp)
 
 <strong>无宿舍楼</strong>
 
 如意
 
-![](/images/5938ff2b514e1aea.jpg)
+![](/images/5938ff2b514e1aea.webp)
 
 <strong>班级无风扇</strong>
 
 <strong>旧教学楼使用旧桌椅（高一高二） 新教学楼使用新桌椅（高三）</strong>
 
-![](/images/60968c005c679324.jpg)
+![](/images/60968c005c679324.webp)
 
 <strong>图书馆有空调 配备公用电脑（拆了）（因为我们班之前有个人老逃课去看）</strong>
 
-![](/images/b1db471a079c3ec6.jpg)
+![](/images/b1db471a079c3ec6.webp)
 
-![](/images/99a82331d713ca1a.jpg)
+![](/images/99a82331d713ca1a.webp)
 
 <strong>篮球馆</strong>
 
-![](/images/bb55dca1be104922.jpg)
+![](/images/bb55dca1be104922.webp)
 
 <strong>乒乓球室</strong>
 
-![](/images/bb1deee8e70c780d.jpg)
+![](/images/bb1deee8e70c780d.webp)
 
 <strong>千人报告厅</strong>
 
-![](/images/fa90cb885d7ec1eb.jpg)
+![](/images/fa90cb885d7ec1eb.webp)
 
 <strong>大型报告厅</strong>
 
-![](/images/dabe2368e97b3a98.jpg)
+![](/images/dabe2368e97b3a98.webp)
 
 <strong>艺术楼</strong>
 
-![](/images/e20eae240cb90a55.jpg)
+![](/images/e20eae240cb90a55.webp)
 
 <strong>实验楼</strong>
 
@@ -165,81 +165,81 @@ title: 日常生活
 
 <strong>图源：怀绪</strong>
 
-![](/images/375f1603057be843.jpg)
+![](/images/375f1603057be843.webp)
 
-![](/images/790033b0fd79aded.jpg)
+![](/images/790033b0fd79aded.webp)
 
 <strong>金川</strong>
 
-![](/images/338c750e50dcafaf.jpg)
+![](/images/338c750e50dcafaf.webp)
 
 <strong>班级无风扇 全部使用新桌椅</strong>
 
-![](/images/c392e7818a7f0e15.jpg)
+![](/images/c392e7818a7f0e15.webp)
 
-![](/images/4e8ce4a42aa14e72.jpg)
+![](/images/4e8ce4a42aa14e72.webp)
 
-![](/images/dc13bb0564d4cd9c.jpg)
+![](/images/dc13bb0564d4cd9c.webp)
 
 <strong>师生服务中心</strong>
 
-![](/images/326de1524226bc88.jpg)
+![](/images/326de1524226bc88.webp)
 
 <strong>图书馆预计九月开放已投入使用</strong>
 
-![](/images/5a568336e93400ca.jpg)
+![](/images/5a568336e93400ca.webp)
 
-![](/images/71d22dfa6d1cd3f9.jpg)
+![](/images/71d22dfa6d1cd3f9.webp)
 
 <strong>篮球馆</strong>
 
-![](/images/5b66128258dd9947.jpg)
+![](/images/5b66128258dd9947.webp)
 
 <strong>羽毛球馆</strong>
 
-![](/images/5ac52635d624aef1.jpg)
+![](/images/5ac52635d624aef1.webp)
 
 <strong>健身房</strong>
 
-![](/images/dd5eda093830a527.jpg)
+![](/images/dd5eda093830a527.webp)
 
 <strong>乒乓球室</strong>
 
-![](/images/610d7fe66451d4b0.jpg)
+![](/images/610d7fe66451d4b0.webp)
 
 <strong>艺术楼预计九月开放已投入使用</strong>
 
 <strong>实验楼预计九月开放已投入使用</strong>
 
-![](/images/6073c79910d00f9b.jpg)
+![](/images/6073c79910d00f9b.webp)
 
 <strong>大型报告厅4个</strong>
 
-![](/images/bd3c8e1a32138b25.jpg)
+![](/images/bd3c8e1a32138b25.webp)
 
-![](/images/4c384b995339f6d7.jpg)
+![](/images/4c384b995339f6d7.webp)
 
-![](/images/9f43be125bf267f6.jpg)
+![](/images/9f43be125bf267f6.webp)
 
 <strong>三层食堂</strong>
 
-![](/images/60970aadd2b71fa4.jpg)
+![](/images/60970aadd2b71fa4.webp)
 
-![](/images/cdde9990bf538fd7.jpg)
+![](/images/cdde9990bf538fd7.webp)
 
 <strong>男女宿舍楼（独立卫生间，上床下桌，配备有电话）</strong>
 
-![](/images/2819ea4b69aafe0b.jpg)
+![](/images/2819ea4b69aafe0b.webp)
 
-![](/images/4890669835f127c8.jpg)
+![](/images/4890669835f127c8.webp)
 
-![](/images/524e8835228edc90.jpg)
+![](/images/524e8835228edc90.webp)
 
-![](/images/4ba7467b76e80b9f.jpg)
+![](/images/4ba7467b76e80b9f.webp)
 
-![](/images/98b1ba6a0f306e8a.jpg)
+![](/images/98b1ba6a0f306e8a.webp)
 
-![](/images/601484675f8a2256.jpg)
+![](/images/601484675f8a2256.webp)
 
 
 ### 关于活动
@@ -254,39 +254,39 @@ title: 日常生活
 
 <strong><span style="color:#7f7f7f">研学地点：蒙草蒙牛伊利昭君墓将军衙署博物馆农业基地</span></strong>
 
-![](/images/619b85c6d92d0245.jpg)
+![](/images/619b85c6d92d0245.webp)
 
 <strong>假期研学（火箭班优先）</strong>
 
 <strong><span style="color:#7f7f7f">研学地点：北京上海（理） 西安延安（文）</span></strong>
 
-![](/images/edfe6cfdbd632693.jpg)
+![](/images/edfe6cfdbd632693.webp)
 
 <strong>万米接力</strong>
 
-![](/images/bb9a605897ea032b.jpg)
+![](/images/bb9a605897ea032b.webp)
 
 <strong>科技节</strong>
 
-![](/images/76e9ea3f6fb3a53d.jpg)
+![](/images/76e9ea3f6fb3a53d.webp)
 
 <strong>模拟联合国</strong>
 
-![](/images/1bc45a3ebec1270f.jpg)
+![](/images/1bc45a3ebec1270f.webp)
 
 <strong>心理健康月</strong>
 
-![](/images/cddaf468ea028d8f.jpg)
+![](/images/cddaf468ea028d8f.webp)
 
 <strong>美育节</strong>
 
-![](/images/203aa94eda5dbd99.jpg)
+![](/images/203aa94eda5dbd99.webp)
 
 <strong>小型活动和比赛由各个学科组安排，这里不做说明</strong>
 
 <strong>模拟联合国相关经验 图源：未知作者，待后续补充</strong>
 
-![](/images/f07bfb7aca2d3317.jpg)
+![](/images/f07bfb7aca2d3317.webp)
 
 
 ### 关于素质课程
@@ -306,11 +306,11 @@ title: 日常生活
 
 <strong>每周2节，安排在下午7 8节</strong>
 
-![](/images/777f547beb31dae3.jpg)
+![](/images/777f547beb31dae3.webp)
 
-![](/images/fb93c2ff30b05949.jpg)
+![](/images/fb93c2ff30b05949.webp)
 
-![](/images/9c9f1b35f20d7679.jpg)
+![](/images/9c9f1b35f20d7679.webp)
 
 
 ### 关于午餐晚餐/食堂
@@ -329,7 +329,7 @@ title: 日常生活
 
 如图为呼伦加了牛肉的牛肉面（大约要了十块钱的牛肉吧）
 
-![](/images/618db2c6355bf9bb.jpg)
+![](/images/618db2c6355bf9bb.webp)
 
 不得不说，酱牛肉的价格稍低于市场价，还是比较优惠的。
 
@@ -337,25 +337,25 @@ title: 日常生活
 
 菜单
 
-![](/images/05ed4fa9718b7301.jpg)
+![](/images/05ed4fa9718b7301.webp)
 
-![](/images/0ae7d2f07a568879.jpg)
+![](/images/0ae7d2f07a568879.webp)
 
 金川食堂
 
-![](/images/be85b238699fff31.jpg)
+![](/images/be85b238699fff31.webp)
 
 bu
 
 菜单图源及文字：水曜日限定🥞
 
-![](/images/2fc31e5198199bbf.jpg)
+![](/images/2fc31e5198199bbf.webp)
 
-![](/images/a23b53542a7727f6.jpg)
+![](/images/a23b53542a7727f6.webp)
 
-![](/images/c574890b3131d6bc.jpg)
+![](/images/c574890b3131d6bc.webp)
 
-![](/images/634065e3d2a9d38c.jpg)
+![](/images/634065e3d2a9d38c.webp)
 
 金川食堂总体可以有时候会有些油但是菜式挺多可以自己搭配一楼是素菜5块肉菜8块特色窗口12/15二楼是自助餐15块入场费
 
@@ -374,15 +374,15 @@ bu
 
 图源：怀绪
 
-![](/images/615d56ec0d603e38.jpg)
+![](/images/615d56ec0d603e38.webp)
 
-![](/images/c0e79c9d1ffaaaf9.jpg)
+![](/images/c0e79c9d1ffaaaf9.webp)
 
 金川校区：四人间上床下桌两个洗漱台两个厕所还有插座上床的楼梯有储物柜早6:00起床6:20之前出楼中午12:50熄灯13:50起床晚23:00熄灯。所有学生必须住宿。宿舍按你刚开学后的那个班级分，之后不会再分宿舍。宿舍可以挂海报。不允许使用床帘，宿管在无人时概率会进宿舍检查
 
-![](/images/d85b4cbd92d5d48d.jpg)
+![](/images/d85b4cbd92d5d48d.webp)
 
-![](/images/8bb1d5452025d437.jpg)
+![](/images/8bb1d5452025d437.webp)
 
 
 ### 关于娱乐
@@ -391,7 +391,7 @@ bu
 
 <strong>拍摄于如意</strong>
 
-![](/images/e1e67abcb48ac17b.jpg)
+![](/images/e1e67abcb48ac17b.webp)
 
 <strong>给大屏换个壁纸</strong>
 
@@ -409,17 +409,17 @@ bu
 
 <strong>小考试随便写，老师不会打你</strong>
 
-![](/images/b265f385bca9d9f9.jpg)
+![](/images/b265f385bca9d9f9.webp)
 
 <strong>期末考试完基本就不管了，图片摄于期末考试讲评阶段</strong>
 
-![](/images/0b15bb0d6bfe8fff.jpg)
+![](/images/0b15bb0d6bfe8fff.webp)
 
 <strong>吃火锅 图源：我高二了？</strong>
 
-![](/images/b741594d00644b9c.jpg)
+![](/images/b741594d00644b9c.webp)
 
-![](/images/ee0c907b0418b7a0.jpg)
+![](/images/ee0c907b0418b7a0.webp)
 
 
 ### 关于找对象
@@ -465,7 +465,7 @@ bu
 
 呼伦高一高二会有地下车库，高三在外面，也可以去别的年级随便停，不要干扰其他年级正常停车就可以了，不然会被友好的同学拖走。（教师停车区看情况也可以随便停，甚至还可以给电动车充电）
 
-![](/images/3a052a5f24c13f00.jpg)
+![](/images/3a052a5f24c13f00.webp)
 
 如意每栋楼都有地下车库，停自己教室所在的楼宇下面里面即可（夜自习需推出，不然车就被锁里边了）
 

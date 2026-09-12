@@ -10,7 +10,7 @@ title: 新生须知
 
 ### 关于录取通知书
 
-![](/images/10635dbb25478bd2.jpg)
+![](/images/10635dbb25478bd2.webp)
 
 
 ### 关于新生须知
@@ -30,17 +30,17 @@ title: 新生须知
 
 ### 关于暑假及新学期工作安排（2026）
 
-![](/images/c2693aad19e9cda0.jpg)
+![](/images/c2693aad19e9cda0.webp)
 
 
 ### 关于暑假及新学期工作安排（2025）
 
-![](/images/53b4c1cebcb8a7f3.jpg)
+![](/images/53b4c1cebcb8a7f3.webp)
 
 
 ### 关于新生资料包
 
-![](/images/d442edaca8cb4919.jpg)
+![](/images/d442edaca8cb4919.webp)
 
 开学大概率不收哈
 
@@ -55,7 +55,7 @@ title: 新生须知
 
 <strong>每日军训后进大会议室听讲座，可能会因为劳累和天气产生不适，及时告知班主任，可以出去休息</strong>
 
-![](/images/9775916f7171b94e.jpg)
+![](/images/9775916f7171b94e.webp)
 
 <strong>7月24日（军训首日）</strong>
 
@@ -107,7 +107,7 @@ title: 新生须知
 
 <strong>入学考试仅做摸底，具体作用为评估老师教学水平及成果，不会计入分班考试中</strong>
 
-![](/images/b8b1630a1aeed1dc.jpg)
+![](/images/b8b1630a1aeed1dc.webp)
 
 
 ### 关于校服
@@ -116,15 +116,15 @@ title: 新生须知
 
 <strong><mark><span style="color:#ae2e19">2026级新生新供应商购买渠道</span></mark></strong>
 
-![](/images/2eb2c35499ca5411.jpg)
+![](/images/2eb2c35499ca5411.webp)
 
-![](/images/975ac07e30d6af65.jpg)
+![](/images/975ac07e30d6af65.webp)
 
-![](/images/bf69035add9176eb.jpg)
+![](/images/bf69035add9176eb.webp)
 
 <strong><mark><span style="color:#ae2e19">2021-2025级学生购买渠道：</span></mark></strong>
 
-![](/images/2737ad59f11ff8c7.jpg)
+![](/images/2737ad59f11ff8c7.webp)
 
 <strong>秋季校服，上衣价格130，裤子价格105（裤子非必须）</strong>
 
@@ -136,15 +136,15 @@ title: 新生须知
 
 <strong>图片所展示的依次为致远级部，弘毅级部，北辰级部的校服</strong>
 
-![](/images/ec9c37774d46e675.jpg)
+![](/images/ec9c37774d46e675.webp)
 
-![](/images/ff5b32f79aa5f805.jpg)
+![](/images/ff5b32f79aa5f805.webp)
 
-![](/images/a4d82a955b7fd595.jpg)
+![](/images/a4d82a955b7fd595.webp)
 
 以下为不分年级的防晒服以及针织套头卫衣
 
-![](/images/a7a64aa5538e40d4.jpg)
+![](/images/a7a64aa5538e40d4.webp)
 
 <strong><mark><span style="color:#ff0000">新生购买校服请务必根据学校安排！！！</span></mark></strong>
 

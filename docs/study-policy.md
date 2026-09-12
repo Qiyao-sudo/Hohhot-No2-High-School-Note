@@ -61,15 +61,15 @@ title: 日常学习政策及环境
 
 高一高二高三会进行体测，每次体测总成绩达到及格线（60/100分）即可拿到体育白卡，不及格需要在高考完后补测<strong>（毕业时一定要记得去找老师拿白卡）</strong>
 
-![](/images/14ece6a5242a1af2.jpg)
+![](/images/14ece6a5242a1af2.webp)
 
 以下是体测项目及标准
 
-![](/images/accf4f8a14bf3226.jpg)
+![](/images/accf4f8a14bf3226.webp)
 
-![](/images/05e82a27407a602b.jpg)
+![](/images/05e82a27407a602b.webp)
 
-![](/images/abe0baaf1788ce74.jpg)
+![](/images/abe0baaf1788ce74.webp)
 
 
 ### 关于上课地点

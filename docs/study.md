@@ -28,7 +28,7 @@ title: 学习板块
 
 ### 胡哲 2025届呼伦1班毕业生，目前就读于南京大学
 
-![](/images/a3ae5cb69b6d34b8.jpg)
+![](/images/a3ae5cb69b6d34b8.webp)
 
 [https://weixin.qq.com/sph/AOwFxglsL2](https://weixin.qq.com/sph/AOwFxglsL2)
 
@@ -121,7 +121,7 @@ title: 学习板块
 
 ### 谢俊杰 2025届呼伦1班毕业生 目前就读于清华大学
 
-![](/images/36bfb62bb49fa3f9.jpg)
+![](/images/36bfb62bb49fa3f9.webp)
 
 [https://weixin.qq.com/sph/AGoAiSUFyU](https://weixin.qq.com/sph/AGoAiSUFyU)
 
@@ -210,7 +210,7 @@ title: 学习板块
 
 ### 吴禹嘉 2025届呼伦1班毕业生 目前就读于武汉大学
 
-![](/images/7aee40feb6365032.jpg)
+![](/images/7aee40feb6365032.webp)
 
 [https://weixin.qq.com/sph/AmihIxtwd2](https://weixin.qq.com/sph/AmihIxtwd2)
 
@@ -324,7 +324,7 @@ title: 学习板块
 
 ### 曹子斐 2026届呼伦1班毕业生
 
-![](/images/aa87e04992da6546.jpg)
+![](/images/aa87e04992da6546.webp)
 
 [https://weixin.qq.com/sph/AhyHXlcjjo](https://weixin.qq.com/sph/AhyHXlcjjo)
 
@@ -502,9 +502,9 @@ title: 学习板块
 
 古诗文阅读/文言文阅读：下面是高考中古诗文的考试范围，大家可以在假期提前背诵。语文的古诗文是基础，背诵不但可以拿到高考语文6分的默写题目，而且能提升大家对课外文言文的理解。对于实词虚词的理解，断句的掌握，文言文古诗文翻译会有很大的帮助，收益远高于直接背诵答题套路以及实虚词翻译，背诵时建议了解文学常识以及背景知识？越早背诵流利越有助于后期提高语文成绩。
 
-![](/images/27f09fc7654d4fe2.jpg)
+![](/images/27f09fc7654d4fe2.webp)
 
-![](/images/320ba9c0d4458f22.jpg)
+![](/images/320ba9c0d4458f22.webp)
 
 现代文阅读：不建议大量的刷题，做题不在多，而在于精，一篇好的文本是值得反复阅读的。平时在闲暇时间，去反复阅读一些语文阅读文章，不一定要反复推敲，也不一定要挑你不感兴趣的文章去读，最后读到你能够记住你感兴趣的文章的大部分细节即可，这样有助于大家阅读能力的提升。
 
@@ -525,7 +525,7 @@ title: 学习板块
 
 也强烈建议使用《十年高考》练习册作为英语练习的一个工具，高考题虽然在高一尚有难度，但是大家不是完全不会做，可以挑选一星二星三星的简单题来练习。
 
-![](/images/e4f6aab8d45cd15a.jpg)
+![](/images/e4f6aab8d45cd15a.webp)
 
 背诵：高中英语需要掌握3500词，因此大家在高一的时候就可以开始着手背诵了，完形填空和选词填空特别考察单词积累，阅读方面单词和阅读能力对于阅读题的提升作用是互补的，单词能力不行就得靠阅读能力补充。因此还是建议：多背单词！！！
 

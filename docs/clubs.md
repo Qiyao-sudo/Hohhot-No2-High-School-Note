@@ -9,12 +9,12 @@ title: 社团相关
 
 呼伦校区社团
 
-![](/images/c97300dc8d1e66ff.jpg)
+![](/images/c97300dc8d1e66ff.webp)
 
 如意校区社团
 
-![](/images/599a066dad6d479f.jpg)
+![](/images/599a066dad6d479f.webp)
 
 金川校区社团
 
-![](/images/3fb1080f73936df4.jpg)
+![](/images/3fb1080f73936df4.webp)

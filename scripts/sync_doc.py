@@ -259,29 +259,39 @@ MAX_WIDTH = 1000  # 本地压缩: 宽度上限(px)
 
 
 def compress_image(path):
-    """有 Pillow 时把图片压到 MAX_WIDTH 宽/质量 82, 减小仓库体积"""
+    """转存为 WebP(quality 82): 同等观感下比 JPEG 小 30-50%。
+    保留透明通道; 宽度超限等比缩小。返回最终文件路径。"""
     try:
         from PIL import Image
     except ImportError:
-        return
+        return path
     try:
         with Image.open(path) as im:
-            im = im.convert("RGB") if im.mode not in ("RGB", "L") else im
+            if im.mode in ("RGBA", "LA", "P"):
+                im = im.convert("RGBA")
+            elif im.mode not in ("RGB", "L"):
+                im = im.convert("RGB")
             if im.width > MAX_WIDTH:
                 im = im.resize((MAX_WIDTH, round(im.height * MAX_WIDTH / im.width)))
-            im.save(path, "JPEG", quality=82)
+            out = path.with_suffix(".webp")
+            im.save(out, "WEBP", quality=82, method=6)
+        path.unlink(missing_ok=True)
+        return out
     except Exception:
-        pass
+        return path
 
 
 def download_images(images):
-    """下载图片到 docs/public/images/, 返回 {url: 本地文件名}"""
+    """下载图片到 docs/public/images/ 并转为 WebP, 返回 {url: 本地文件名}"""
     IMG_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        from PIL import Image  # noqa: F401
+    except ImportError:
+        raise SystemExit("需要 Pillow 才能转 WebP: pip install pillow")
     mapping = {}
     for pos, url in images:
         url = sanitize_url(url)
-        ext = Path(url.split("?")[0]).suffix or ".jpg"
-        name = hashlib.md5(url.encode()).hexdigest()[:16] + ".jpg"
+        name = hashlib.md5(url.encode()).hexdigest()[:16] + ".webp"
         mapping[url] = name
         dest = IMG_DIR / name
         if dest.exists() and dest.stat().st_size > 0:
@@ -289,13 +299,21 @@ def download_images(images):
         try:
             req = urllib.request.Request(url, headers=HEADERS)
             with urllib.request.urlopen(req, timeout=60) as resp:
-                dest.write_bytes(resp.read())
-            compress_image(dest)
+                raw = dest.with_suffix(".part")
+                raw.write_bytes(resp.read())
+            final = compress_image(raw)
+            final.replace(dest)
             print(f"  ↓ {name} ({dest.stat().st_size // 1024} KB)")
         except Exception as exc:
             print(f"  ✗ 下载失败 {url[:60]}: {exc}")
             dest.unlink(missing_ok=True)
             mapping.pop(url)
+    # 清理未被引用的旧图(格式迁移的 .jpg / 源文档删除的图), 防止目录膨胀
+    keep = set(mapping.values())
+    for f in IMG_DIR.iterdir():
+        if f.is_file() and f.name not in keep:
+            f.unlink()
+            print(f"  - 清理未引用图片 {f.name}")
     return mapping
 
 

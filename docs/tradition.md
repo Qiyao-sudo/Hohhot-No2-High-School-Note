@@ -14,7 +14,7 @@ title: 二中传统
 
 <strong>报了呼伦校区的同学们，一定要记得上钟楼看一看。那个地方于2025年由两位精通电脑的学长正式点亮，如果有机会的话，一定要自己上去一次。那里有各个学长的名字，也欢迎你留言。</strong>
 
-![](/images/4990f87e84cf76b4.jpg)
+![](/images/4990f87e84cf76b4.webp)
 
 <strong>如意景区</strong>
 
@@ -32,9 +32,9 @@ title: 二中传统
 
 <strong>钟楼</strong>
 
-![](/images/9431a60cfb56d09b.jpg)
+![](/images/9431a60cfb56d09b.webp)
 
-![](/images/25f87d748a39e527.jpg)
+![](/images/25f87d748a39e527.webp)
 
 <strong>C座地道</strong>
 
@@ -44,6 +44,6 @@ title: 二中传统
 
 <strong>图书楼日落</strong>
 
-![](/images/08bb0b82bff2e5e0.jpg)
+![](/images/08bb0b82bff2e5e0.webp)
 
-![](/images/b9658246fb40a201.jpg)
+![](/images/b9658246fb40a201.webp)

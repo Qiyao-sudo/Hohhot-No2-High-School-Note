@@ -60,8 +60,8 @@ title: 日常管理
 
 放一张被ban掉的签名墙
 
-![](/images/19f07ba693a7de9e.jpg)
+![](/images/19f07ba693a7de9e.webp)
 
 金川采取人性化管理，领导层：何万立，陈峰
 
-![](/images/113a8dcab51dfee4.jpg)
+![](/images/113a8dcab51dfee4.webp)
