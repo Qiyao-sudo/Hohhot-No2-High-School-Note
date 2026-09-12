@@ -258,9 +258,10 @@ bash /www/hs2/sync.sh && tail -3 /www/hs2/logs/sync.log
 | sync.sh 一直 no change | 正常: 远端 main 无新提交; 强制重建可 `cd /www/hs2/repo && git reset --hard origin/main` 后手动跑一遍 |
 | 重启服务器后站没了 | 没做 `pm2 save` / `pm2 startup`: 补做后 `pm2 resurrect` 验证 |
 
-## 9. 与其他部署端的关系
+## 9. 收尾与后续
 
-- **CloudBase 国内站**(自动 Git 部署)与本方案并行, 各自独立更新, 可互为备份;
-- 迁移完成后, 原 Windows 服务器(按量计费)记得**关机或销毁**, 不跑也计费;
-- 本机若为**包年轻量服务器**, 同时满足了以后 ICP 备案的资源条件
-  (域名 + 备案流程见 [cloudbase-deploy.md](cloudbase-deploy.md) 第 4 节, 流程通用)。
+- 本方案为站点**唯一正式部署端**; 迁移验证通过后, 其他临时部署(如按量计费的
+  Windows 云服务器)记得**关机或销毁**, 不跑也计费;
+- 想上自有域名 + HTTPS: 买域名 → 腾讯云备案(轻量服务器**包年包月**即可作为
+  备案资源) → 域名解析到本机 → 宝塔站点 SSL 一键申请; 备案期间该域名不可访问,
+  不影响当前 IP 方式使用。
