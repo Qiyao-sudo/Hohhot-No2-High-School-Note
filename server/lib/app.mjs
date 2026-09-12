@@ -16,6 +16,7 @@ import { search, snippetFor, kbStats } from './kb.mjs'
 import { rateLimit, clientIp } from './ratelimit.mjs'
 import { buildSystemPrompt } from './prompt.mjs'
 import { serveStatic, staticRoot } from './static.mjs'
+import { recordVisit } from './visits.mjs'
 
 const VERSION = '1.0.0'
 const HOUR = 3600_000
@@ -118,6 +119,12 @@ export async function handle(req, res) {
         model: apiKey ? model : null,
         kb: kbStats(),
       })
+      return
+    }
+
+    // ---------------------------------------------------------- visit 访客计数
+    if (req.method === 'GET' && pathname === '/visit') {
+      sendJson(res, 200, { ok: true, ...recordVisit(ip) })
       return
     }
 

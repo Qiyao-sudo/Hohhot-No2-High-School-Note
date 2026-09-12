@@ -36,8 +36,6 @@ export default defineConfig({
   head: [
     // favicon 需手动拼 base(head 里的 href 不会被 VitePress 自动加前缀)
     ['link', { rel: 'icon', href: BASE + 'badge.svg' }],
-    // 不蒜子访问统计(页脚 SiteFooter 展示, 加载失败自动隐藏)
-    ['script', { src: 'https://busuanzi.ibruce.info/busuanzi/pendant.min.js', async: '' }],
   ],
   themeConfig: {
     // 校徽: 导航栏与侧栏标题前的站点 logo(圆角徽章底, 见 docs/public/badge.svg)

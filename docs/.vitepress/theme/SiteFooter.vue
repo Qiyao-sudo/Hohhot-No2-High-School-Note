@@ -1,9 +1,12 @@
 <script setup lang="ts">
-// 全站页脚统计条: 建站日期 + 实时运行时长 + 访问统计(不蒜子)。
-// 挂载在 layout-bottom 插槽, 位于所有页面内容之下。
-// 不蒜子为第三方免费计数服务, 加载失败时访问统计整行隐藏。
+// 全站页脚统计条: 建站日期 + 实时运行时长 + 访客统计(自建后端, 按 IP 去重)。
+// 访客数来自同源后端 GET /api/assistant/visit(server/lib/visits.mjs 计数);
+// 后端未部署/不可达时访问统计整行隐藏, 不影响其余内容。
 // 运行时长含秒且持续跳动, 只在客户端挂载后渲染, 避免 SSR 水合不一致。
 import { onMounted, onUnmounted, ref } from 'vue'
+
+const apiBase =
+  (typeof __ASSISTANT_API__ !== 'undefined' && __ASSISTANT_API__) || '/api/assistant'
 
 // 建站时间: 2026年9月1日 0时(北京时间)
 const LAUNCH = new Date('2026-09-01T00:00:00+08:00').getTime()
@@ -11,7 +14,9 @@ const LAUNCH = new Date('2026-09-01T00:00:00+08:00').getTime()
 const mounted = ref(false)
 const days = ref(0)
 const uptime = ref('')
-const statsOff = ref(false)
+const visitors = ref(0)
+const todayVisitors = ref(0)
+const statsOff = ref(true)
 
 function pad(n: number) {
   return String(n).padStart(2, '0')
@@ -27,22 +32,24 @@ function refresh() {
 }
 
 let timer: ReturnType<typeof setInterval> | null = null
-let probe: ReturnType<typeof setTimeout> | null = null
 
-onMounted(() => {
+onMounted(async () => {
   mounted.value = true
   refresh()
   timer = setInterval(refresh, 1000)
-  // 不蒜子为异步注入: 4 秒后计数仍未回填则整行隐藏
-  probe = setTimeout(() => {
-    const v = document.getElementById('busuanzi_value_site_pv')
-    statsOff.value = !v || !/\d/.test(v.textContent || '')
-  }, 4000)
+  try {
+    const res = await fetch(`${apiBase}/visit`)
+    const d = await res.json()
+    if (d.ok && d.total > 0) {
+      visitors.value = d.total
+      todayVisitors.value = d.today
+      statsOff.value = false
+    }
+  } catch { /* 后端不可达: 保持隐藏 */ }
 })
 
 onUnmounted(() => {
   if (timer) clearInterval(timer)
-  if (probe) clearTimeout(probe)
 })
 </script>
 
@@ -56,13 +63,11 @@ onUnmounted(() => {
       </template>
     </p>
     <p class="site-stats-line muted" :class="{ off: statsOff }">
-      <span id="busuanzi_container_site_pv" title="总浏览量">
-        本站共被浏览 <span id="busuanzi_value_site_pv"></span> 次
+      <span title="按 IP 去重统计">
+        累计 {{ visitors.toLocaleString() }} 位访客观临
       </span>
       <span class="dot" aria-hidden="true">·</span>
-      <span id="busuanzi_container_site_uv" title="访客数">
-        <span id="busuanzi_value_site_uv"></span> 位访客观临
-      </span>
+      <span>今日 {{ todayVisitors.toLocaleString() }}</span>
     </p>
   </footer>
 </template>
