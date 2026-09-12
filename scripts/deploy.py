@@ -74,9 +74,9 @@ def main():
     port = int(os.environ.get("DEPLOY_PORT", "22"))
     password = os.environ.get("DEPLOY_PASS", "")
     keyfile = os.environ.get("DEPLOY_KEY", "")
-    remote_root = os.environ.get("DEPLOY_ROOT", "/www/hs2")
-    # pm2 进程名: 与服务器现有进程保持一致(默认 hs2; 手动部署过请填实际名)
-    pm2_name = os.environ.get("DEPLOY_PM2_NAME", "hs2")
+    remote_root = os.environ.get("DEPLOY_ROOT", "/www/wwwroot/hs2z")
+    # pm2 进程名: 与服务器现有进程保持一致(默认 hs2z; 手动部署过请填实际名)
+    pm2_name = os.environ.get("DEPLOY_PM2_NAME", "hs2z")
     if not host:
         die("缺少 DEPLOY_HOST: 请复制 .env.example 为 .env 并填写服务器信息")
 
@@ -133,6 +133,14 @@ def main():
         code = out.channel.recv_exit_status()
         return code, o, e
 
+    # 探测部署结构: {ROOT}/server 平铺(手动部署) 或 {ROOT}/deploy/server 嵌套(标准结构)
+    _, probe_out, _ = run_remote(
+        f"if [ -d '{remote_root}/server' ]; then echo flat; "
+        f"elif [ -d '{remote_root}/deploy/server' ]; then echo nested; else echo new; fi")
+    layout = (probe_out.strip() or "new")
+    R = remote_root if layout == "flat" else f"{remote_root}/deploy"
+    print(f"部署结构: {layout} → {R}")
+
     # 生成本机密钥对应的 ecosystem(服务器端唯一配置源, 首次部署即自动创建进程)
     api_key = os.environ.get("DEEPSEEK_API_KEY", "")
     key_js = repr(api_key) if api_key else "''"
@@ -141,7 +149,7 @@ def main():
         "  apps: [{\n"
         f"    name: '{pm2_name}',\n"
         "    script: 'index.mjs',\n"
-        f"    cwd: '{remote_root}/deploy/server',\n"
+        f"    cwd: '{R}/server',\n"
         "    env: {\n"
         f"      DEEPSEEK_API_KEY: {key_js},\n"
         "      PORT: 8787,\n"
@@ -172,7 +180,6 @@ def main():
     sftp.close()
     print(f"上传完成({size_mb:.1f}MB + ecosystem)")
 
-    R = f"{remote_root}/deploy"
     switch_cmd = f"""set -e
 mkdir -p {R}
 cp {R}/server/.env /tmp/hs2.env 2>/dev/null || true
@@ -215,7 +222,7 @@ pm2 reload {pm2_name} || pm2 restart {pm2_name}""")
   站点与接口已原子切换, pm2 已热重载""")
     if not ok:
         print("\033[33m⚠ 注意: 服务器 .env 缺 DEEPSEEK_API_KEY(助手会显示未配置)。\033[0m"
-              "  请按 docs/linux-deploy.md 第 2.4 节在服务器补配后 pm2 restart hs2")
+              f"  请按 docs/linux-deploy.md 在服务器补配后 pm2 restart {pm2_name}")
 
 
 if __name__ == "__main__":
