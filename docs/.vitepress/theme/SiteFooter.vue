@@ -9,8 +9,8 @@ import { onMounted, onUnmounted, ref } from 'vue'
 const apiBase =
   (typeof __ASSISTANT_API__ !== 'undefined' && __ASSISTANT_API__) || '/api/assistant'
 
-// 建站时间: 2026年9月1日 0时(北京时间)
-const LAUNCH = new Date('2026-09-01T00:00:00+08:00').getTime()
+// 建站时间: 2026年9月12日 10时(北京时间)
+const LAUNCH = new Date('2026-09-12T10:00:00+08:00').getTime()
 
 const mounted = ref(false)
 const days = ref(0)
@@ -57,7 +57,7 @@ onUnmounted(() => {
 <template>
   <footer class="site-stats">
     <p class="site-stats-line">
-      <span>建站于 2026 年 9 月 1 日</span>
+      <span>建站于 2026 年 9 月 12 日</span>
       <template v-if="mounted">
         <span class="dot" aria-hidden="true">·</span>
         <span>已稳定运行 {{ uptime }}</span>
@@ -68,7 +68,7 @@ onUnmounted(() => {
         累计 {{ visitors.toLocaleString() }} 次访问
       </span>
       <span class="dot" aria-hidden="true">·</span>
-      <span>今日 {{ todayVisitors.toLocaleString() }}</span>
+      <span>今日 {{ todayVisitors.toLocaleString() }}次</span>
     </p>
   </footer>
 </template>
