@@ -28,7 +28,6 @@ import AssistantChat from '../.vitepress/theme/AssistantChat.vue'
 </ClientOnly>
 
 <p class="assistant-note">
-  后端部署与配置说明见<a href="../assistant-setup">文档助手部署指南</a>。
   助手回答基于本站文档生成，如有出入请以<a href="https://docs.qq.com/doc/DYm5PeUxOVmdEZmxs" target="_blank" rel="noopener">源文档</a>与学校正式通知为准。
 </p>
 
