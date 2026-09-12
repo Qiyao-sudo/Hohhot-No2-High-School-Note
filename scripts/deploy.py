@@ -75,6 +75,8 @@ def main():
     password = os.environ.get("DEPLOY_PASS", "")
     keyfile = os.environ.get("DEPLOY_KEY", "")
     remote_root = os.environ.get("DEPLOY_ROOT", "/www/hs2")
+    # pm2 进程名: 与服务器现有进程保持一致(默认 hs2; 手动部署过请填实际名)
+    pm2_name = os.environ.get("DEPLOY_PM2_NAME", "hs2")
     if not host:
         die("缺少 DEPLOY_HOST: 请复制 .env.example 为 .env 并填写服务器信息")
 
@@ -137,7 +139,7 @@ def main():
     eco = (
         "module.exports = {\n"
         "  apps: [{\n"
-        "    name: 'hs2',\n"
+        f"    name: '{pm2_name}',\n"
         "    script: 'index.mjs',\n"
         f"    cwd: '{remote_root}/deploy/server',\n"
         "    env: {\n"
@@ -184,7 +186,7 @@ mv /tmp/hs2-new/dist {R}/dist
 [ -f /tmp/hs2.env ] && mv /tmp/hs2.env {R}/server/.env
 [ -f {R}/server/.env ] && chmod 600 {R}/server/.env
 cd {remote_root}
-if pm2 describe hs2 >/dev/null 2>&1; then pm2 reload hs2; else pm2 start ecosystem.config.js; fi
+if pm2 describe {pm2_name} >/dev/null 2>&1; then pm2 reload {pm2_name}; else pm2 start ecosystem.config.js; fi
 sleep 3
 curl -fsS http://127.0.0.1:8787/health"""
 
@@ -197,7 +199,7 @@ curl -fsS http://127.0.0.1:8787/health"""
         step("健康检查失败, 自动回滚")
         run_remote(f"""[ -d {R}/server.old ] && (rm -rf {R}/server && mv {R}/server.old {R}/server) || true
 [ -d {R}/dist.old ] && (rm -rf {R}/dist && mv {R}/dist.old {R}/dist) || true
-pm2 reload hs2 || pm2 restart hs2""")
+pm2 reload {pm2_name} || pm2 restart {pm2_name}""")
         _, o2, _ = run_remote("curl -fsS http://127.0.0.1:8787/health || true")
         print("回滚后 health:", o2.strip()[:120])
         ssh.close()
