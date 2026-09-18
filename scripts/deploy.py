@@ -144,8 +144,6 @@ def main():
     # 生成本机密钥对应的 ecosystem(服务器端唯一配置源, 首次部署即自动创建进程)
     api_key = os.environ.get("DEEPSEEK_API_KEY", "")
     key_js = repr(api_key) if api_key else "''"
-    wx_app_id = os.environ.get("WECHAT_APP_ID", "")
-    wx_secret = os.environ.get("WECHAT_SECRET", "")
     eco = (
         "module.exports = {\n"
         "  apps: [{\n"
@@ -154,8 +152,6 @@ def main():
         f"    cwd: '{R}/server',\n"
         "    env: {\n"
         f"      DEEPSEEK_API_KEY: {key_js},\n"
-        f"      WECHAT_APP_ID: {repr(wx_app_id)},\n"
-        f"      WECHAT_SECRET: {repr(wx_secret)},\n"
         "      PORT: 8787,\n"
         "      HOST: '127.0.0.1',\n"
         "    },\n"
@@ -229,9 +225,6 @@ pm2 reload {pm2_name} || pm2 restart {pm2_name}""")
     if not ok:
         print("\033[33m⚠ 注意: 服务器 .env 缺 DEEPSEEK_API_KEY(助手会显示未配置)。\033[0m"
               f"  请按 docs/linux-deploy.md 在服务器补配后 pm2 restart {pm2_name}")
-    if '"wx":true' not in health:
-        print("\033[33mℹ 提示: 未配置 WECHAT_APP_ID/WECHAT_SECRET(微信分享卡片用默认内容)。\033[0m"
-              "  需要自定义分享卡片时见 docs/wx-share-setup.md")
 
 
 if __name__ == "__main__":

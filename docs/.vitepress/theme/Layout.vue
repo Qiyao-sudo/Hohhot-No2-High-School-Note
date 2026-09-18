@@ -10,10 +10,6 @@ import ImageLightbox from './ImageLightbox.vue'
 import SidebarIcons from './SidebarIcons.vue'
 import SiteFooter from './SiteFooter.vue'
 import AssistantWidget from './AssistantWidget.vue'
-import { useWxShare } from './wxShare'
-
-// 微信内打开时自定义分享卡片(标题/摘要/缩略图); 其他环境零开销
-useWxShare()
 
 const { frontmatter } = useData()
 
