@@ -26,13 +26,13 @@
 ## 1. 公众号后台配置(一次性, 约 10 分钟)
 
 1. **JS 接口安全域名**: 设置与开发 → 公众号设置 → 功能设置 →
-   JS 接口安全域名 → 填站点域名(不带 `http://`)。微信要求先下载校验文件
+   JS 接口安全域名 → 填 `hs2z.inknook.ink`(不带 `http://`)。微信要求先下载校验文件
    `MP_verify_xxxx.txt` 放到域名根目录:
    ```bash
    # 本机: 把下载的文件放进 docs/public/(构建后会出现在站点根)
    cp ~/Downloads/MP_verify_xxxx.txt docs/public/
    npm run deploy -- --no-sync
-   # 验证: 浏览器打开 https://你的域名/MP_verify_xxxx.txt 能看到内容
+   # 验证: 浏览器打开 https://hs2z.inknook.ink/MP_verify_xxxx.txt 能看到内容
    ```
    然后再回公众号后台点保存。
 2. **IP 白名单**: 设置与开发 → 基本配置 → IP 白名单 → 加入服务器公网 IP
@@ -57,7 +57,7 @@ WECHAT_SECRET=你的AppSecret
 
 ```bash
 curl http://127.0.0.1:8787/health        # 服务器上: "wx":true
-curl 'http://127.0.0.1:8787/wx-signature?url=https://你的域名/'
+curl 'https://hs2z.inknook.ink/api/assistant/wx-signature?url=https%3A%2F%2Fhs2z.inknook.ink%2F'
 # → {"ok":true,"appId":"...","timestamp":...,"nonceStr":"...","signature":"..."}
 ```
 

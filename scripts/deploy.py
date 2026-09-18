@@ -197,7 +197,8 @@ mv /tmp/hs2-new/dist {R}/dist
 [ -f /tmp/hs2.env ] && mv /tmp/hs2.env {R}/server/.env
 [ -f {R}/server/.env ] && chmod 600 {R}/server/.env
 cd {remote_root}
-if pm2 describe {pm2_name} >/dev/null 2>&1; then pm2 reload {pm2_name}; else pm2 start ecosystem.config.js; fi
+# --update-env: ecosystem 里新增/变更的环境变量(如 WECHAT_SECRET)才能注入进程
+if pm2 describe {pm2_name} >/dev/null 2>&1; then pm2 reload {pm2_name} --update-env; else pm2 start ecosystem.config.js; fi
 sleep 3
 curl -fsS http://127.0.0.1:8787/health"""
 

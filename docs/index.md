@@ -21,7 +21,7 @@ import HomeHero from './.vitepress/theme/HomeHero.vue'
 <span class="who">来自呼市二中呼伦校区2022级学长及所有参与文章建设的二中人</span>
 <span class="date">最近更新于2026年9月4日</span>
 </header>
-<p class="doc-intro-motto">今天拼搏在二中，明天是建设祖国的先锋</p>
+<p class="doc-intro-motto">今天拼搏在二中，明天是建设祖国的先“锋</p>
 <ul class="doc-intro-notes">
 <li>文档已开通<strong><mark>全员可编辑权限</mark></strong>，欢迎各位学长学姐补充（为了给大家更为立体的观点，注意不要删除文档中已有的内容）</li>
 <li><strong><mark>有问题可在文末留言区留言，会有人及时解答</mark></strong></li>
