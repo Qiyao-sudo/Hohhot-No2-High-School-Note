@@ -9,6 +9,7 @@
 //   GET  /health   健康检查与配置状态(前端据此显示降级提示)
 //   POST /search   纯检索(不调模型): { query } → 结果卡片
 //   POST /ask      RAG 问答: { messages, stream? } → SSE 流式回答
+//   GET  /wx-signature?url=页面URL  微信 JS-SDK 签名(见 lib/wx.mjs)
 //   GET  /*        静态文件(设 STATIC_ROOT 时启用, 见 lib/static.mjs)
 // ============================================================
 import { deepseekConfig, streamChat, UpstreamError } from './deepseek.mjs'
@@ -17,6 +18,7 @@ import { rateLimit, clientIp } from './ratelimit.mjs'
 import { buildSystemPrompt } from './prompt.mjs'
 import { serveStatic, staticRoot } from './static.mjs'
 import { recordVisit } from './visits.mjs'
+import { wxConfig, signUrl } from './wx.mjs'
 
 const VERSION = '1.0.0'
 const HOUR = 3600_000
@@ -117,10 +119,42 @@ export async function handle(req, res) {
         version: VERSION,
         configured: Boolean(apiKey),
         model: apiKey ? model : null,
+        wx: wxConfig().configured,
         kb: kbStats(),
       })
       return
     }
+
+    // -------------------------------------------------- wx-signature 微信签名
+    // 前端 wx.config 前调用: GET /wx-signature?url=<encodeURIComponent(当前页完整URL)>
+    if (req.method === 'GET' && pathname === '/wx-signature') {
+      if (!wxConfig().configured) {
+        sendJson(res, 503, { error: '微信 JS-SDK 未配置 WECHAT_APP_ID / WECHAT_SECRET。' })
+        return
+      }
+      const rl = rateLimit(`w:${ip}`, Number(process.env.ASSISTANT_RATE_WX ?? 240), HOUR)
+      if (!rl.ok) {
+        sendJson(res, 429, { error: `请求太频繁, 请 ${Math.ceil(rl.retryAfterSec / 60)} 分钟后再试。` })
+        return
+      }
+      let pageUrl = ''
+      try {
+        pageUrl = String(new URL(req.url, 'http://localhost').searchParams.get('url') || '')
+      } catch { /* 走下方校验 */ }
+      // 只接受 http(s) 链接; 签名只对配置了 JS 安全域名的站点生效, 不构成越权
+      if (!/^https?:\/\//i.test(pageUrl)) {
+        sendJson(res, 400, { error: '缺少或非法的 url 参数(需为完整 http(s) 页面地址)。' })
+        return
+      }
+      try {
+        sendJson(res, 200, { ok: true, ...(await signUrl(pageUrl)) })
+      } catch (e) {
+        // 微信侧错误(IP 不在白名单 / secret 失效等)原样透出, 便于排查
+        sendJson(res, e?.errcode ? 502 : 500, { error: e.message || '生成微信签名失败。' })
+      }
+      return
+    }
+
 
     // ---------------------------------------------------------- visit 访客计数
     if (req.method === 'GET' && pathname === '/visit') {
