@@ -89,7 +89,6 @@ export default defineConfig({
         text: '交流',
         collapsed: false,
         items: [
-          { text: '文档助手', link: '/assistant/' },
           { text: '留言处', link: '/messages' },
           { text: '后记', link: '/afterword' },
         ],
