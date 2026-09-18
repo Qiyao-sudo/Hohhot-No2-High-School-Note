@@ -110,7 +110,9 @@ export function useWxShare() {
         const cfg = await res.json()
         lastSignedUrl = target
         wx.config({
-          debug: false,
+          // 排障开关: 页面 URL 加 ?wxdebug=1 后在微信内打开,
+          // 会弹窗显示 wx.config 验签结果与具体 errMsg
+          debug: new URLSearchParams(location.search).has('wxdebug'),
           appId: cfg.appId,
           timestamp: cfg.timestamp,
           nonceStr: cfg.nonceStr,
