@@ -711,8 +711,23 @@ def main():
                 line = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", line)
                 # 说明内含换行(如"链接 + 空行 + 文字")会截断 markdown-it 的
                 # HTML 块, 产生孤立 </li> 破坏 Vue 模板编译; 统一转为 <br>
-                line = re.sub(r"\n\s*\n+", "<br><br>", line)
-                line = line.replace("\n", "<br>")
+                line = re.sub(r"\n\s*\n+", " ", line)
+                line = line.replace("\n", " ")
+                # HTML 块内 Markdown 链接不会被解析; 将独立 URL 移到说明末尾并输出为链接。
+                link = re.match(r"^\[([^\]]+)\]\((https?://[^)]+)\)\s*(.*)$", line.strip())
+                if link:
+                    label, url, remainder = link.groups()
+                    line = re.sub(
+                        r"地址\s*$",
+                        f'地址：<a href="{url}">{label}</a>',
+                        remainder,
+                    )
+                else:
+                    line = re.sub(
+                        r"\[([^\]]+)\]\((https?://[^)]+)\)",
+                        r'<a href="\2">\1</a>',
+                        line,
+                    )
                 notes.append(line)
         # 音频附件 + 截图 + 源文档链接 → IntroMedia 全局组件(内部处理 base 路径)
         track = next(((k, v) for k, v in AUDIO_FILES.items() if k in attach), None)
