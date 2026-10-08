@@ -23,9 +23,7 @@ import HomeHero from './.vitepress/theme/HomeHero.vue'
 </header>
 <p class="doc-intro-motto">今天拼搏在二中，明天是建设祖国的先锋</p>
 <ul class="doc-intro-notes">
-<li>[https://hs2z.inonook.ink/](https://hs2z.inonook.ink/)
-
-网页版文档已上线，网页版文档为大家提供更美观的页面设计和更优质的阅读体验，地址</li>
+<li>[https://hs2z.inonook.ink/](https://hs2z.inonook.ink/)<br><br>网页版文档已上线，网页版文档为大家提供更美观的页面设计和更优质的阅读体验，地址</li>
 <li>文档已开通<strong><mark>全员可编辑权限</mark></strong>，欢迎各位学长学姐补充（为了给大家更为立体的观点，注意不要删除文档中已有的内容）</li>
 <li><strong><mark>有问题可在文末留言区留言，会有人及时解答</mark></strong></li>
 <li><strong><mark>感谢各位二中毕业生和在校生对本项目建设提供的大力支持</mark></strong></li>

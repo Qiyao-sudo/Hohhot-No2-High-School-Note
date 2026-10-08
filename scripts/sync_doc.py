@@ -709,6 +709,10 @@ def main():
                 # 去掉整行加粗外壳; 行内 ** 转为 <strong>(HTML 块内不解析 Markdown)
                 line = re.sub(r"^\*\*(.+)\*\*$", r"\1", p.strip())
                 line = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", line)
+                # 说明内含换行(如"链接 + 空行 + 文字")会截断 markdown-it 的
+                # HTML 块, 产生孤立 </li> 破坏 Vue 模板编译; 统一转为 <br>
+                line = re.sub(r"\n\s*\n+", "<br><br>", line)
+                line = line.replace("\n", "<br>")
                 notes.append(line)
         # 音频附件 + 截图 + 源文档链接 → IntroMedia 全局组件(内部处理 base 路径)
         track = next(((k, v) for k, v in AUDIO_FILES.items() if k in attach), None)
