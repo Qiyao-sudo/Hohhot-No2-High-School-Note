@@ -11,6 +11,9 @@
 //   POST /ask      RAG 问答: { messages, stream? } → SSE 流式回答
 //   GET  /*        静态文件(设 STATIC_ROOT 时启用, 见 lib/static.mjs)
 // ============================================================
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { deepseekConfig, streamChat, UpstreamError } from './deepseek.mjs'
 import { search, snippetFor, kbStats } from './kb.mjs'
 import { rateLimit, clientIp } from './ratelimit.mjs'
@@ -18,7 +21,8 @@ import { buildSystemPrompt } from './prompt.mjs'
 import { serveStatic, staticRoot } from './static.mjs'
 import { recordVisit } from './visits.mjs'
 
-const VERSION = '1.0.0'
+const VERSION = '1.2.0'
+const MINUTE = 60_000
 const HOUR = 3600_000
 
 const CORS_HEADERS = {
@@ -79,6 +83,22 @@ function retrievalQuery(messages) {
     .slice(0, 240)
 }
 
+// 双层限流: 按分钟突发(防盗刷, 单分钟伤害可控) + 按小时总量(防持续刷)。
+// 分钟级用短提示(秒), 小时级用长提示(分钟); 返回 false 表示已写 429 响应。
+function checkRate(res, ip, action, perMin, perHour, hitMinMsg, hitHourMsg) {
+  const m = rateLimit(`${action}m:${ip}`, perMin, MINUTE)
+  if (!m.ok) {
+    sendJson(res, 429, { error: hitMinMsg(m.retryAfterSec) })
+    return false
+  }
+  const h = rateLimit(`${action}:${ip}`, perHour, HOUR)
+  if (!h.ok) {
+    sendJson(res, 429, { error: hitHourMsg(Math.ceil(h.retryAfterSec / 60)) })
+    return false
+  }
+  return true
+}
+
 function toPublicSource(s, i) {
   return {
     n: i + 1,
@@ -87,6 +107,66 @@ function toPublicSource(s, i) {
     heading: s.chunk.heading,
     anchor: s.chunk.anchor,
   }
+}
+
+// ---------------------------------------------------------------- 识图输入
+// 检索命中的知识块若带站内图片, 把原图(base64 data URL)附到最后一条
+// 用户消息里, 让模型能直接"看图"回答(表格截图、通知照片等)。
+// 文件从静态站根目录(默认 ../dist)或源码 docs/public 解析。
+const IMG_MIME = { '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif' }
+const MAX_VISION_IMAGES = 3 // 每次问答最多附图数, 控制延迟与费用
+const MAX_IMAGE_BYTES = 2.5 * 1024 * 1024
+
+function localImagePath(url) {
+  if (!url.startsWith('/images/')) return null
+  const serverDir = path.dirname(path.dirname(fileURLToPath(import.meta.url))) // → server/
+  const roots = [
+    process.env.ASSISTANT_IMAGE_ROOT || '',
+    staticRoot() || '',
+    path.resolve(serverDir, '..', 'docs', 'public'), // 本地开发未构建时兜底
+  ].filter(Boolean)
+  for (const r of roots) {
+    const f = path.join(r, url)
+    try {
+      if (fs.statSync(f).isFile()) return f
+    } catch { /* 尝试下一个根目录 */ }
+  }
+  return null
+}
+
+// 从检索结果(已按相关度排序)收集去重后的图片, 返回 [{ url, file }]
+// 每个知识块最多贡献 2 张, 避免图片密集的小节占满全部名额
+function collectVisionImages(sources) {
+  const seen = new Set()
+  const out = []
+  for (const s of sources) {
+    let perChunk = 0
+    for (const im of s.chunk.images ?? []) {
+      if (perChunk >= 2 || seen.has(im.url)) continue
+      const file = localImagePath(im.url)
+      if (!file || fs.statSync(file).size > MAX_IMAGE_BYTES) continue
+      seen.add(im.url)
+      out.push({ url: im.url, file })
+      perChunk++
+      if (out.length >= MAX_VISION_IMAGES) return out
+    }
+  }
+  return out
+}
+
+// 把纯文本最后一条用户消息改写成 多模态(文本 + 附图) 消息
+function attachImages(messages, images) {
+  if (!images.length) return
+  const last = messages[messages.length - 1]
+  // 向模型说明附图来源, 避免被误认为用户上传的图片
+  const note = `\n\n(系统附注: 下方${images.length === 1 ? '这' : images.length + '张'}图片是系统根据你的问题从站内文档自动附加的资料原图, 不是用户上传的; 图片地址为 ${images.map((i) => i.url).join('、')})`
+  const parts = [{ type: 'text', text: last.content + note }]
+  for (const im of images) {
+    const b64 = fs.readFileSync(im.file).toString('base64')
+    const mime = IMG_MIME[path.extname(im.file).toLowerCase()] || 'image/webp'
+    parts.push({ type: 'image_url', image_url: { url: `data:${mime};base64,${b64}` } })
+  }
+  last.content = parts
 }
 
 export async function handle(req, res) {
@@ -130,11 +210,15 @@ export async function handle(req, res) {
 
     // ---------------------------------------------------------- search
     if (req.method === 'POST' && pathname === '/search') {
-      const rl = rateLimit(`s:${ip}`, Number(process.env.ASSISTANT_RATE_SEARCH ?? 120), HOUR)
-      if (!rl.ok) {
-        sendJson(res, 429, { error: `检索太频繁了, 请 ${Math.ceil(rl.retryAfterSec / 60)} 分钟后再试。` })
-        return
-      }
+      if (
+        !checkRate(
+          res, ip, 's',
+          Number(process.env.ASSISTANT_RATE_SEARCH_MIN ?? 20),
+          Number(process.env.ASSISTANT_RATE_SEARCH ?? 120),
+          (sec) => `检索太快了, 请 ${sec} 秒后再试。`,
+          (min) => `检索太频繁了, 请 ${min} 分钟后再试。`
+        )
+      ) return
       const { query } = await readJsonBody(req)
       const q = String(query ?? '').trim().slice(0, 200)
       if (!q) {
@@ -158,11 +242,15 @@ export async function handle(req, res) {
         sendJson(res, 503, { error: '文档助手后端尚未配置 DEEPSEEK_API_KEY, 无法回答。' })
         return
       }
-      const rl = rateLimit(`a:${ip}`, Number(process.env.ASSISTANT_RATE_ASK ?? 30), HOUR)
-      if (!rl.ok) {
-        sendJson(res, 429, { error: `提问次数有点多, 请 ${Math.ceil(rl.retryAfterSec / 60)} 分钟后再试。` })
-        return
-      }
+      if (
+        !checkRate(
+          res, ip, 'a',
+          Number(process.env.ASSISTANT_RATE_ASK_MIN ?? 5),
+          Number(process.env.ASSISTANT_RATE_ASK ?? 30),
+          (sec) => `提问太快了, 请 ${sec} 秒后再试。`,
+          (min) => `提问次数有点多, 请 ${min} 分钟后再试。`
+        )
+      ) return
       const body = await readJsonBody(req)
       const messages = sanitizeMessages(body.messages)
       if (!messages) {
@@ -171,11 +259,22 @@ export async function handle(req, res) {
       }
 
       const sources = search(retrievalQuery(messages), 6)
+      if (process.env.ASSISTANT_DEBUG) console.error(`[ask] 检索 ${sources.length} 块: ${sources.map((s) => s.chunk.heading + '(' + (s.chunk.images?.length ?? 0) + '图)').join(' | ')}`)
       const sysPrompt = buildSystemPrompt(sources)
       const modelMessages = [
         { role: 'system', content: sysPrompt },
         ...messages.slice(-7),
       ]
+      // 识图: 命中图片时附原图给模型(可用 ASSISTANT_VISION=0 关闭)
+      if (process.env.ASSISTANT_VISION !== '0') {
+        try {
+          const visionImages = collectVisionImages(sources)
+          if (process.env.ASSISTANT_DEBUG) console.error(`[ask] 附图 ${visionImages.length} 张: ${visionImages.map((i) => i.url).join(', ') || '-'}`)
+          attachImages(modelMessages, visionImages)
+        } catch (e) {
+          if (process.env.ASSISTANT_DEBUG) console.error('[ask] 附图失败:', e?.message)
+        }
+      }
 
       const wantStream = body.stream !== false
       if (!wantStream) {

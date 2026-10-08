@@ -93,6 +93,7 @@ export function kbStats() {
   return {
     pages: allPages.length,
     chunks: allChunks.length,
+    images: allChunks.reduce((n, c) => n + (c.images?.length ?? 0), 0),
     generatedAt,
   }
 }

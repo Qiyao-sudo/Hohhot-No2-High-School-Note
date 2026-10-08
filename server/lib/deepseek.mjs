@@ -28,7 +28,8 @@ export function deepseekConfig() {
     baseUrl: (process.env.DEEPSEEK_BASE_URL || DEFAULT_BASE).replace(/\/+$/, ''),
     model: process.env.DEEPSEEK_MODEL || DEFAULT_MODEL,
     temperature: Number(process.env.DEEPSEEK_TEMPERATURE ?? 0.3),
-    maxTokens: Number(process.env.DEEPSEEK_MAX_TOKENS ?? 2000),
+    // 识图/长回答时思考链也会计入 max_tokens, 默认值需留足余量
+    maxTokens: Number(process.env.DEEPSEEK_MAX_TOKENS ?? 3000),
   }
 }
 

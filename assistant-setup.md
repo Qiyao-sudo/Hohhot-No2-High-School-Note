@@ -2,13 +2,13 @@
 
 文档助手是本站的 AI 问答功能：基于站内全部文档构建知识库（RAG 检索），调用
 [DeepSeek](https://platform.deepseek.com) 生成带引用来源的回答，并支持不经过 AI
-的直接检索定位。由三部分组成：
+的直接检索定位。模型具备识图能力，站内图片也可被检索、被回答引用。由三部分组成：
 
 | 部分 | 位置 | 说明 |
 | --- | --- | --- |
-| 前端 | `docs/.vitepress/theme/Assistant*.vue` + `/assistant/` 页面 | 聊天界面、引用角标、来源跳转、全站浮动入口 |
-| 后端 | `server/`（零依赖 Node 18+） | 中文检索、拼装提示词、调用 DeepSeek、SSE 流式转发、每 IP 限流 |
-| 知识库 | `scripts/build-kb.mjs` → `server/data/kb.mjs` | 构建时从 `docs/*.md` 生成，随 `npm run build` 自动更新 |
+| 前端 | `docs/.vitepress/theme/Assistant*.vue` + `/assistant/` 页面 | 聊天界面、引用角标、来源跳转、回答内嵌图片、全站浮动入口 |
+| 后端 | `server/`（零依赖 Node 18+） | 中文检索、拼装提示词、调用 DeepSeek（含识图输入）、SSE 流式转发、每 IP 限流 |
+| 知识库 | `scripts/caption-images.mjs` + `scripts/build-kb.mjs` → `server/data/kb.mjs` | 构建时从 `docs/*.md` 生成，随 `npm run build` 自动更新 |
 
 API Key **只保存在后端环境变量**，永远不会进入前端构建产物（前端只存后端地址）。
 
@@ -76,9 +76,13 @@ location /api/assistant/ {
 | `DEEPSEEK_MODEL` | `deepseek-v4-flash` | 后端 |
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | 后端 |
 | `DEEPSEEK_TEMPERATURE` | `0.3` | 后端 |
-| `DEEPSEEK_MAX_TOKENS` | `2000` | 后端 |
-| `ASSISTANT_RATE_ASK` | `30`（次/小时/IP） | 后端 |
+| `DEEPSEEK_MAX_TOKENS` | `3000`（识图/长回答需为思考链留余量） | 后端 |
+| `ASSISTANT_RATE_ASK_MIN` | `5`（次/分钟/IP，防突发盗刷） | 后端 |
+| `ASSISTANT_RATE_ASK` | `30`（次/小时/IP，总量兜底） | 后端 |
+| `ASSISTANT_RATE_SEARCH_MIN` | `20`（次/分钟/IP） | 后端 |
 | `ASSISTANT_RATE_SEARCH` | `120`（次/小时/IP） | 后端 |
+| `ASSISTANT_VISION` | `1`（识图输入开关，`0` 关闭） | 后端 |
+| `ASSISTANT_IMAGE_ROOT` | 静态站根目录（自动探测） | 后端 |
 | `PORT` | `8787` | 后端 |
 | `HOST` | `0.0.0.0`（Nginx 反代场景建议 `127.0.0.1`） | 后端 |
 | `STATIC_ROOT` | `<server>/../dist`（同源托管静态站） | 后端 |
@@ -88,13 +92,21 @@ location /api/assistant/ {
 
 知识库在构建时生成，不需要单独维护：
 
-- `npm run build` 会先执行 `node scripts/build-kb.mjs` 重建知识库；
+- `npm run build` 会先运行 `npm run caption`（用视觉模型为新增图片生成中文描述，
+  缓存进 `server/data/image-captions.json` 并随 git 提交；未配置 API Key 或无新增
+  图片时自动跳过），再执行 `node scripts/build-kb.mjs` 重建知识库；
+- 图片描述进入知识库后，搜「校服照片」「课表截图」这类词也能命中对应小节；
+- 回答时助手会引用资料附图（以 Markdown 图片嵌在回答里，可点击放大），后端还会
+  把检索命中的图片原图直接发给模型「看图作答」（如读取通知截图、表格照片里的
+  文字），该行为可用 `ASSISTANT_VISION=0` 关闭；
 - 服务器的 `sync.sh` 每次同步都会重新构建，部署即用新知识库。
 
 ## 五、费用与安全提示
 
-- flash 档模型按 token 计费，一次典型问答约 2-3k token（约几厘钱）；后端已内置
-  每 IP 每小时 30 次问答 / 120 次检索的限流，可按需调整上面的环境变量。
+- flash 档模型按 token 计费，一次典型问答约 2-3k token（约几厘钱）；附图识图时
+  每张图约增加 1k token、每次最多附 3 张；后端限流为双层——每 IP 每分钟 5 次问答 /
+  20 次检索（防突发盗刷，超限提示等待秒数）+ 每小时 30 次问答 / 120 次检索（总量
+  兜底），可按需调整上面的环境变量。
 - API Key 泄露后请立即到 DeepSeek 平台删除重建；本仓库 `.env` 已被 gitignore，
   **任何情况下都不要把 Key 写进代码或提交到仓库**。
 - 公网部署后建议偶尔查看 DeepSeek 控制台的用量曲线，确认没有异常刷量。

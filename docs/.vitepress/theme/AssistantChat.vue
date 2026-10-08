@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { useData, withBase } from 'vitepress'
 import MarkdownIt from 'markdown-it'
 import {
@@ -29,6 +29,7 @@ interface ChatMessage {
   role: 'user' | 'assistant'
   kind?: 'answer' | 'results' | 'error'
   content: string
+  shown?: number // 逐字输出: 已渲染的字符数(流结束后追平 content.length)
   sources?: Source[]
   results?: { page: string, path: string, heading: string, anchor: string, snippet: string }[]
   streaming?: boolean
@@ -64,9 +65,27 @@ md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
   return defaultLink(tokens, idx, options, env, self)
 }
 
-// 把模型输出的 [[n]] 引用标记转为可点击角标(点击打开来源页面)
+// 回答内嵌图片: 站内相对地址补站点 base(子路径部署), 懒加载;
+// 点击放大由全站 ImageLightbox 的全局事件委托接管
+const defaultImage =
+  md.renderer.rules.image ||
+  ((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options))
+md.renderer.rules.image = (tokens, idx, options, env, self) => {
+  const t = tokens[idx]
+  const src = t.attrGet('src') || ''
+  if (src.startsWith('/')) t.attrSet('src', withBase(src))
+  t.attrSet('loading', 'lazy')
+  t.attrSet('decoding', 'async')
+  t.attrSet('alt', t.content || '回答配图')
+  return defaultImage(tokens, idx, options, env, self)
+}
+
+// 把模型输出的 [[n]] 引用标记转为可点击角标(点击打开来源页面);
+// 流式回答只渲染到 shown(逐字推进), 结束后渲染全文
 function renderAnswer(msg: ChatMessage): string {
-  let html = md.render(msg.content || '')
+  const text =
+    msg.streaming && typeof msg.shown === 'number' ? msg.content.slice(0, msg.shown) : msg.content
+  let html = md.render(text || '')
   html = html.replace(
     /\[\[(\d+)\]\]/g,
     (_, n) =>
@@ -133,16 +152,23 @@ function persist() {
 }
 
 // ------------------------------------------------------------------ 滚动跟随
+// pinned=贴底自动跟随。用户向上滚动立即停止跟随(wheel 一票否决, 不等阈值),
+// 重新滚回底部附近自动恢复; 输出期间可自由翻看历史消息。
 let pinned = true
 function onScroll() {
   const el = listEl.value
   if (!el) return
   pinned = el.scrollHeight - el.scrollTop - el.clientHeight < 90
 }
+function onWheel(e: WheelEvent) {
+  if (e.deltaY < 0) pinned = false
+}
 async function scrollBottom(force = false) {
   if (!force && !pinned) return
   await nextTick()
   const el = listEl.value
+  // 直接赋值(不用 smooth): 平滑动画途中的中间位置会误触发 onScroll
+  // 把 pinned 判成 false, 和逐字输出的高频跟随互相打架
   if (el) el.scrollTop = el.scrollHeight
 }
 
@@ -174,7 +200,7 @@ async function send(text?: string) {
 
 async function doSearch(q: string) {
   busy.value = true
-  const msg: ChatMessage = { id: idSeq++, role: 'assistant', kind: 'results', content: '', streaming: true }
+  const msg = reactive<ChatMessage>({ id: idSeq++, role: 'assistant', kind: 'results', content: '', streaming: true })
   messages.value.push(msg)
   try {
     const res = await fetch(`${apiBase}/search`, {
@@ -200,7 +226,11 @@ async function doSearch(q: string) {
 
 async function doAsk(q: string) {
   busy.value = true
-  const msg: ChatMessage = { id: idSeq++, role: 'assistant', kind: 'answer', content: '', streaming: true }
+  // reactive 包裹: 后续异步流程对 content/shown 的修改要直接驱动视图更新
+  // (push 普通对象后再改原始对象不会触发渲染, 流式输出会卡成一坨)
+  const msg = reactive<ChatMessage>({
+    id: idSeq++, role: 'assistant', kind: 'answer', content: '', shown: 0, streaming: true,
+  })
   messages.value.push(msg)
   abortCtrl = new AbortController()
 
@@ -208,6 +238,25 @@ async function doAsk(q: string) {
     .filter((m) => !m.streaming && m.kind !== 'error')
     .slice(-7)
     .map((m) => ({ role: m.role, content: m.content }))
+
+  // 逐字输出: SSE 的 delta 分块先全量进 content, 由定时器以稳定节奏推进
+  // shown 渲染(追赶式步长, 突发的大块内容也能较快排空), 视觉上是平滑打字机;
+  // 流结束(streamEnded)且缓冲排空后, 才算这条回答完成
+  let streamEnded = false
+  const drained = new Promise<void>((resolve) => {
+    const timer = setInterval(() => {
+      if ((msg.shown ?? 0) < msg.content.length) {
+        const remain = msg.content.length - (msg.shown ?? 0)
+        msg.shown = (msg.shown ?? 0) + Math.max(1, Math.ceil(remain / 6))
+        if (msg.shown > msg.content.length) msg.shown = msg.content.length
+        scrollBottom()
+      }
+      if (streamEnded && (msg.shown ?? 0) >= msg.content.length) {
+        clearInterval(timer)
+        resolve()
+      }
+    }, 30)
+  })
 
   try {
     const res = await fetch(`${apiBase}/ask`, {
@@ -242,11 +291,9 @@ async function doAsk(q: string) {
         if (!ev || !raw) continue
         const data = JSON.parse(raw)
         if (ev === 'meta') msg.sources = data.sources || []
-        else if (ev === 'delta') {
-          msg.content += data.t
-          scrollBottom()
-        } else if (ev === 'error') throw new Error(data.message)
-        else if (ev === 'done') { /* 流结束 */ }
+        else if (ev === 'delta') msg.content += data.t
+        else if (ev === 'error') throw new Error(data.message)
+        else if (ev === 'done') { /* 流结束, 由 drained 收尾 */ }
       }
     }
     if (!msg.content) msg.content = '（未收到回答，请重试。）'
@@ -257,7 +304,10 @@ async function doAsk(q: string) {
       msg.kind = 'error'
       msg.content = `出错了：${e?.message || '网络错误，请稍后重试'}`
     }
+    msg.shown = msg.content.length // 停止/出错立即显示全部, 不再逐字
   } finally {
+    streamEnded = true
+    await drained
     msg.streaming = false
     busy.value = false
     abortCtrl = null
@@ -362,7 +412,7 @@ defineExpose({ focus: () => inputEl.value?.focus() })
     </div>
 
     <!-- 消息区 -->
-    <div ref="listEl" class="ai-list" @scroll.passive="onScroll" @click="onAnswerClick">
+    <div ref="listEl" class="ai-list" @scroll.passive="onScroll" @wheel.passive="onWheel" @click="onAnswerClick">
       <!-- 空状态: 推荐问题 -->
       <div v-if="!messages.length" class="ai-empty">
         <div class="empty-icon">
@@ -416,22 +466,25 @@ defineExpose({ focus: () => inputEl.value?.focus() })
         <div v-else class="msg bot">
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div class="answer" :class="{ err: m.kind === 'error' }" v-html="renderAnswer(m)" />
-          <span v-if="m.streaming && !m.content" class="typing">
+          <span v-if="m.streaming && !m.shown" class="typing">
             <i></i><i></i><i></i>
           </span>
-          <div v-if="m.sources && m.sources.length" class="sources">
-            <span class="src-label">
-              <component :is="PhBookmarks" :size="13" weight="fill" aria-hidden="true" />
-              来源
-            </span>
-            <a
-              v-for="s in m.sources"
-              :key="s.n"
-              class="src-chip"
-              :href="sourceHref(s)"
-              :title="`${s.page} › ${s.heading}`"
-            >{{ s.n }}. {{ s.page }} › {{ s.heading }}</a>
-          </div>
+          <!-- 来源卡片在回答完成后再淡入, 不与逐字输出抢注意力 -->
+          <Transition name="src-fade">
+            <div v-if="!m.streaming && m.sources && m.sources.length" class="sources">
+              <span class="src-label">
+                <component :is="PhBookmarks" :size="13" weight="fill" aria-hidden="true" />
+                来源
+              </span>
+              <a
+                v-for="s in m.sources"
+                :key="s.n"
+                class="src-chip"
+                :href="sourceHref(s)"
+                :title="`${s.page} › ${s.heading}`"
+              >{{ s.n }}. {{ s.page }} › {{ s.heading }}</a>
+            </div>
+          </Transition>
           <div v-if="!m.streaming && m.kind !== 'error'" class="msg-ops">
             <button class="icon-btn" title="复制回答" aria-label="复制回答" @click="copyAnswer(m)">
               <component :is="copiedId === m.id ? PhCheck : PhCopySimple" :size="15" aria-hidden="true" />
@@ -556,7 +609,7 @@ defineExpose({ focus: () => inputEl.value?.focus() })
 .ai-notice svg { flex: none; margin-top: 0.2rem; color: var(--vp-c-warning, #b8860b); }
 .ai-notice a { color: var(--vp-c-brand-1); text-decoration: underline; text-underline-offset: 3px; }
 
-/* 消息列表 */
+/* 消息列表(不用 smooth: 平滑滚动动画与逐字输出的高频跟随互相打架) */
 .ai-list {
   flex: 1;
   overflow-y: auto;
@@ -564,7 +617,6 @@ defineExpose({ focus: () => inputEl.value?.focus() })
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  scroll-behavior: smooth;
 }
 .msg { display: flex; flex-direction: column; max-width: 92%; }
 .msg.user { align-self: flex-end; align-items: flex-end; }
@@ -616,6 +668,18 @@ defineExpose({ focus: () => inputEl.value?.focus() })
   border: 1px solid var(--vp-c-border);
   padding: 0.3em 0.6em;
 }
+/* 回答内嵌图片(助手按资料附图时输出) */
+.answer :deep(img) {
+  display: block;
+  max-width: min(320px, 100%);
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-border);
+  margin: 0.5em 0;
+  cursor: zoom-in;
+  background: var(--vp-c-bg-soft);
+}
 .answer.err { color: var(--vp-c-danger-1, #c0392b); }
 
 /* 引用角标 */
@@ -646,6 +710,14 @@ defineExpose({ focus: () => inputEl.value?.focus() })
   flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem;
+}
+/* 回答完成后来源卡片淡入 */
+.src-fade-enter-active {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.src-fade-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
 }
 .src-label {
   display: inline-flex;

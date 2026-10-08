@@ -60,13 +60,28 @@ try {
   )
   check('来源卡片存在', chips.length > 0, `${chips.length} 条`)
   check(
-    '来源链接带站点 base 与锚点',
-    chips.every((c) => /^\/Hohhot-No2-High-School-Note\/[a-z-]+#.+/.test(c.href)),
+    '来源链接带站点 base 与锚点', // /<base>/<页面>#<锚点>, 兼容任意 BASE 构建
+    chips.every((c) => /\/[a-z-]+#[^#]+$/.test(c.href)),
     chips[0]?.href
   )
   // 回答原文里点击角标应能解析出目标链接(delegated click → window.open)
   const citHref = await page.$eval('.answer .cit', (el) => el.dataset.cite)
   check('角标携带来源编号', /^\d+$/.test(citHref || ''), `cite=${citHref}`)
+
+  // ------------------------------------------------ 2.5 识图回答(附图 + 内嵌图片)
+  console.log('2.5 识图与图片输出')
+  await page.click('.ai-input-row textarea')
+  await page.type('.ai-input-row textarea', '作息时间表是怎么安排的？让我看看原表')
+  await page.click('button.send-btn')
+  await page.waitForSelector('.answer img', { timeout: 90000 }).catch(() => {})
+  const inlineImgs = await page.$$eval('.answer img', (els) =>
+    els.map((i) => i.getAttribute('src'))
+  )
+  check(
+    '识图回答内嵌了站内图片',
+    inlineImgs.length > 0 && inlineImgs.every((s) => /\/images\/[0-9a-f]{16}\.webp/.test(s)),
+    inlineImgs.join(', ') || '(未嵌图, 模型行为偶发波动时可重跑)'
+  )
 
   // ------------------------------------------------ 3. 历史持久化
   console.log('3. 会话持久化')

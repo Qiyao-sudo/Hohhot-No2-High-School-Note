@@ -96,7 +96,26 @@ def main():
         # 直接注入环境变量, 避免 Git Bash 的 MSYS 路径转换问题
         sh("npm run build", env_extra={"BASE": "/", "ASSISTANT_API": "", "MSYS_NO_PATHCONV": "1"})
 
-    # ------------------------------------------------ 3. 打包(server + dist, 不含 .env)
+    # ------------------------------------------------ 3. 防呆: dist 不许带本地地址
+    # 手动 `npm run build` 会读取 .env 的 ASSISTANT_API=http://localhost:8787,
+    # 若把这种本机开发构建用 --skip-build 推上线, 前端会去连访客的 localhost。
+    # 只查代码 bundle; *.md.<hash>.js 是文档页面数据, 正文含 127.0.0.1 示例属正常。
+    import glob as _glob
+    import re as _re
+    _bad = []
+    for f in _glob.glob(os.path.join("docs", ".vitepress", "dist", "assets", "**", "*.js"), recursive=True):
+        if _re.search(r"\.md\.[\w-]+\.js$", os.path.basename(f)):
+            continue
+        with open(f, encoding="utf-8", errors="ignore") as fh:
+            if _re.search(r"https?://(?:localhost|127\.0\.0\.1)", fh.read()):
+                _bad.append(f)
+    if _bad:
+        die(
+            "dist 的 JS 里包含 localhost/127.0.0.1(疑似误用本机开发构建)。"
+            "请执行: ASSISTANT_API= BASE=/ npm run build 后重试"
+        )
+
+    # ------------------------------------------------ 4. 打包(server + dist, 不含 .env)
     step("打包")
     pkg = os.path.join(".tmp", "prod.tar.gz")
     os.makedirs(".tmp", exist_ok=True)
@@ -113,7 +132,7 @@ def main():
     size_mb = os.path.getsize(pkg) / 1048576
     print(f"prod.tar.gz {size_mb:.1f}MB")
 
-    # ------------------------------------------------ 4. 上传 + 服务器切换
+    # ------------------------------------------------ 5. 上传 + 服务器切换
     step(f"连接 {user}@{host}:{port}")
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

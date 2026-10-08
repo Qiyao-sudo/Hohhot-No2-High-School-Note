@@ -4,7 +4,7 @@
 GitHub 每日自动同步源文档，**宝塔面板（Linux + PM2 + Nginx）**单机部署。
 
 - **框架**：[VitePress](https://vitepress.dev/) 生成静态站点
-- **文档助手**：基于站内文档的 AI 问答（DeepSeek + RAG 检索，回答带引用来源可跳转），另有免 AI 的快速检索模式
+- **文档助手**：基于站内文档的 AI 问答（DeepSeek 识图 + RAG 检索，回答带引用来源可跳转、可内嵌站内图片），另有免 AI 的快速检索模式
 - **评论**：[Waline](https://waline.js.org) 匿名模式（未配置时显示友好提示，不影响其余功能）
 - **部署**：宝塔 Linux 服务器，一个 Node 进程同时服务整站与助手 API（同源、无跨域），PM2 守护 + Nginx 反代
 - **同步**：源文档 → GitHub 自动同步（每日定时 + 手动触发，含正文全部图片）；服务器每 6 小时自动跟进重建
@@ -41,7 +41,8 @@ GitHub 每日自动同步源文档，**宝塔面板（Linux + PM2 + Nginx）**�
 ├── server/                  # 文档助手后端(零依赖 Node 18+; 同源模式兼托管整站)
 ├── scripts/
 │   ├── sync_doc.py          # 腾讯文档抓取 → Markdown 转换
-│   ├── build-kb.mjs         # docs/*.md → 助手知识库(server/data/kb.mjs)
+│   ├── caption-images.mjs   # 视觉模型为站内图片生成中文描述(增量缓存)
+│   ├── build-kb.mjs         # docs/*.md → 助手知识库(server/data/kb.mjs, 含图片索引)
 │   ├── deploy.py            # 本机一键推送部署(构建+上传+热重载+回滚)
 │   └── outline.json         # 源文档真实标题大纲(层级权威来源)
 ├── .github/workflows/
@@ -99,7 +100,9 @@ npm run assistant             # 起后端 :8787, 再 npm run dev 即可在前端
   未收录的新标题按"关于X / Q&A / 中文序号"模式兜底识别为三级。
 - **板块划分**跟随大纲二级标题（共 12 个板块 → 11 个页面，"更多Q&A"并入留言页）。
 - 源文档中的**图片**已支持自动抓取嵌入（protobuf 解析图片锚点位置 + docimg
-  CDN 下载，本地用 Pillow 压缩到宽 1000px，约 19MB）；**音频附件**无法匿名
-  下载，以"📎 附件占位"标注并链回原文档。
+  CDN 下载，本地用 Pillow 压缩到宽 1000px，约 19MB）；图片描述由视觉模型生成并
+  缓存（`npm run caption`，随 `npm run build` 自动增量更新），进入助手知识库后
+  可被文字检索命中，回答时助手能内嵌原图、直接看图作答（识图输入）；**音频附件**
+  无法匿名下载，以"📎 附件占位"标注并链回原文档。
 - 源文档的复杂表格在转换后会退化为纯文本段落；加粗/颜色/高亮按字符精确保留。
 - 腾讯文档使用内部接口，若其结构变更需同步更新 `scripts/sync_doc.py`。

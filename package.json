@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "sync": "python scripts/sync_doc.py",
+    "caption": "node scripts/caption-images.mjs",
     "build:kb": "node scripts/build-kb.mjs",
-    "build": "npm run build:kb && vitepress build docs",
+    "build": "npm run caption && npm run build:kb && vitepress build docs",
     "dev": "vitepress dev docs",
     "preview": "vitepress preview docs",
     "assistant": "node --env-file-if-exists=.env server/index.mjs",

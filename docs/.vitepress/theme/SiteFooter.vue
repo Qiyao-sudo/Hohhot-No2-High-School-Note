@@ -5,6 +5,7 @@
 // 后端未部署/不可达时访问统计整行隐藏, 不影响其余内容。
 // 运行时长含秒且持续跳动, 只在客户端挂载后渲染, 避免 SSR 水合不一致。
 import { onMounted, onUnmounted, ref } from 'vue'
+import { withBase } from 'vitepress'
 
 const apiBase =
   (typeof __ASSISTANT_API__ !== 'undefined' && __ASSISTANT_API__) || '/api/assistant'
@@ -70,6 +71,28 @@ onUnmounted(() => {
       <span class="dot" aria-hidden="true">·</span>
       <span>今日 {{ todayVisitors.toLocaleString() }}次</span>
     </p>
+    <p class="site-stats-line">
+      <a class="support-link" :href="withBase('/support')">支持我们</a>
+    </p>
+    <p class="site-stats-line icp">
+      <a
+        href="https://beian.miit.gov.cn/"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="工业和信息化部 ICP/IP 地址/域名信息备案管理系统"
+      >蒙ICP备2026009831号</a>
+      <span class="dot" aria-hidden="true">·</span>
+      <a
+        href="https://beian.mps.gov.cn/#/query/webSearch?code=15010202151852"
+        target="_blank"
+        rel="noreferrer"
+        title="公安部互联网站备案信息查询"
+        class="gongan"
+      >
+        <img class="gongan-icon" :src="withBase('/gongan.png')" alt="" aria-hidden="true">
+        蒙公网安备15010202151852号
+      </a>
+    </p>
   </footer>
 </template>
 
@@ -105,5 +128,44 @@ onUnmounted(() => {
 
 .site-stats .dot {
   color: var(--vp-c-divider);
+}
+
+/* 支持我们入口: 与备案链接同规格, 默认弱化、悬停微亮 */
+.site-stats .support-link {
+  color: var(--vp-c-text-3);
+  text-decoration: none;
+}
+
+.site-stats .support-link:hover {
+  color: var(--vp-c-text-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-stats .icp {
+  margin-top: 0.35rem;
+}
+
+.site-stats .icp a {
+  color: var(--vp-c-text-3);
+  text-decoration: none;
+}
+
+.site-stats .icp a:hover {
+  color: var(--vp-c-text-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-stats .icp .gongan {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.site-stats .icp .gongan-icon {
+  width: 15px;
+  height: auto;
+  display: inline-block;
 }
 </style>

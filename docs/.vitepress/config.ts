@@ -27,16 +27,53 @@ const WALINE_SERVERURL =
 // 即插即用; 独立部署后端时通过 ASSISTANT_API 指向其地址(见 docs/assistant-setup.md)
 const ASSISTANT_API = process.env.ASSISTANT_API || '/api/assistant'
 
+// 站点线上地址: og:url / og:image 必须是绝对 URL(微信/QQ 等分享卡片要求)
+const SITE_URL = (process.env.SITE_URL || 'https://hs2z.inknook.ink').replace(/\/+$/, '')
+
+const SITE_TITLE = '呼市二中学习生活指导'
+const SITE_DESC = '来自呼市二中呼伦校区 2022 级学长及所有参与文章建设的二中人'
+
 export default defineConfig({
   lang: 'zh-CN',
-  title: '呼市二中学习生活指导',
-  description:
-    '来自呼市二中呼伦校区 2022 级学长及所有参与文章建设的二中人',
+  title: SITE_TITLE,
+  description: SITE_DESC,
   base: BASE,
   head: [
     // favicon 需手动拼 base(head 里的 href 不会被 VitePress 自动加前缀)
     ['link', { rel: 'icon', href: BASE + 'badge.svg' }],
+    // Open Graph / 微信·QQ 分享卡片(站点级; 每页的 title/description/url 由 transformHead 注入)
+    // og:image 用纯校徽 478x478(微信各场景裁剪不易截掉内容, ≤2MB)
+    ['meta', { property: 'og:site_name', content: SITE_TITLE }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:locale', content: 'zh_CN' }],
+    ['meta', { property: 'og:image', content: SITE_URL + '/og-badge.png' }],
+    ['meta', { property: 'og:image:width', content: '478' }],
+    ['meta', { property: 'og:image:height', content: '478' }],
+    ['meta', { property: 'og:image:alt', content: '呼市二中校徽' }],
+    ['meta', { name: 'twitter:card', content: 'summary' }],
   ],
+  // 每页注入 og:title / og:description / og:url, 让分享出去的卡片按页面显示
+  transformHead({ pageData }) {
+    const pageTitle = (pageData.title || '').trim()
+    const ogTitle =
+      !pageTitle || pageTitle === SITE_TITLE
+        ? `${SITE_TITLE} —— 二中新生到校全攻略`
+        : `${pageTitle} | ${SITE_TITLE}`
+    const ogDesc =
+      pageData.description ||
+      (pageTitle && pageTitle !== SITE_TITLE
+        ? `呼市二中《学习生活指导》· ${pageTitle}：历届学长整理的实用经验`
+        : SITE_DESC)
+    // index.md → 站点根, 其余用优雅链接(freshman.md → /freshman)
+    const rel = (pageData.relativePath || 'index.md')
+      .replace(/\.md$/, '')
+      .replace(/(^|\/)index$/, '$1')
+    return [
+      ['meta', { property: 'og:title', content: ogTitle }],
+      ['meta', { property: 'og:description', content: ogDesc }],
+      ['meta', { property: 'og:url', content: `${SITE_URL}/${rel}` }],
+    ]
+  },
   themeConfig: {
     // 校徽: 导航栏与侧栏标题前的站点 logo(圆角徽章底, 见 docs/public/badge.svg)
     logo: '/badge.svg',
@@ -91,6 +128,7 @@ export default defineConfig({
         items: [
           { text: '留言处', link: '/messages' },
           { text: '后记', link: '/afterword' },
+          { text: '支持我们', link: '/support' },
         ],
       },
     ],
