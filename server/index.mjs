@@ -8,6 +8,7 @@ import { handle } from './lib/app.mjs'
 import { deepseekConfig } from './lib/deepseek.mjs'
 import { kbStats } from './lib/kb.mjs'
 import { staticRoot } from './lib/static.mjs'
+import { adminEnabled } from './lib/comments.mjs'
 
 const port = Number(process.env.PORT || 8787)
 // 监听地址: 默认 0.0.0.0(所有网卡); Nginx 反代场景建议 HOST=127.0.0.1,
@@ -22,6 +23,11 @@ server.listen(port, host, () => {
   console.log(`[assistant] 文档助手后端已启动: http://localhost:${port}`)
   console.log(`[assistant] 模型: ${cfg.model} | API Key: ${cfg.apiKey ? '已配置' : '❌ 未配置(请在 .env 或环境变量中设置 DEEPSEEK_API_KEY)'}`)
   console.log(`[assistant] 知识库: ${kb.pages} 页 / ${kb.chunks} 块 (生成于 ${kb.generatedAt})`)
-  console.log(`[assistant] 接口: GET /health · POST /search · POST /ask (SSE)`)
+  console.log(`[assistant] 接口: GET /health · POST /search · POST /ask (SSE) · GET /comments · POST /comment`)
+  console.log(
+    adminEnabled()
+      ? '[assistant] 评论审核 API: /admin/comments /admin/comment (已配置密码)'
+      : '[assistant] 评论审核 API: 未配置 COMMENT_ADMIN_PASSWORD, 管理接口关闭'
+  )
   console.log(webRoot ? `[assistant] 静态站: ${webRoot} (同源托管整站)` : '[assistant] 静态站: 未启用(设置 STATIC_ROOT 或把构建产物放到 ../dist)')
 })

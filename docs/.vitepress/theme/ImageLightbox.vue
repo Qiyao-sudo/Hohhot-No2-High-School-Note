@@ -32,7 +32,7 @@ const onClick = (e: MouseEvent) => {
   if (
     t.closest(
       '.img-lightbox, .VPNav, .VPSidebar, .VPFooter, .VPLocalNavOutline,' +
-        ' .VPPageNav, .waline-wrapper, .wl-panel, .VPFlyout, .VPMenu'
+        ' .VPPageNav, .comment-section, .VPFlyout, .VPMenu'
     )
   )
     return

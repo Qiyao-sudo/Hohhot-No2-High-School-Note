@@ -9,3 +9,7 @@ __pycache__/
 .ssh
 visits.json
 .zcode/
+comments.json
+comments.db
+comments.db-shm
+comments.db-wal

@@ -19,12 +19,9 @@ try {
 // 特殊部署位置通过 BASE 环境变量覆盖
 const BASE = process.env.BASE || '/'
 
-// Waline 服务端地址(Vercel 部署后填入), 也可通过环境变量注入
-const WALINE_SERVERURL =
-  process.env.WALINE_SERVERURL || 'https://your-waline.vercel.app'
-
 // 文档助手后端地址: 默认同源 /api/assistant —— Vercel 同项目部署(前端+api/函数)
 // 即插即用; 独立部署后端时通过 ASSISTANT_API 指向其地址(见 docs/assistant-setup.md)
+// 评论区(CommentSection)复用同一后端与同一注入常量
 const ASSISTANT_API = process.env.ASSISTANT_API || '/api/assistant'
 
 // 站点线上地址: og:url / og:image 必须是绝对 URL(微信/QQ 等分享卡片要求)
@@ -186,11 +183,11 @@ export default defineConfig({
     ],
   },
   markdown: { lineNumbers: false },
-  // 供 WalineComment / AssistantChat 组件读取
+  // 供 AssistantChat / CommentSection / ShareBar 组件读取
   vite: {
     define: {
-      __WALINE_SERVERURL__: JSON.stringify(WALINE_SERVERURL),
       __ASSISTANT_API__: JSON.stringify(ASSISTANT_API),
+      __SITE_URL__: JSON.stringify(SITE_URL),
     },
   },
 })

@@ -679,7 +679,7 @@ def main():
                 "\n---\n\n## 网站留言区\n\n"
                 "上方为[源文档留言处](https://docs.qq.com/doc/"
                 + DOC_ID + ")的同步内容。"
-                "本站不设置留言区，如有需要请访问[源文档留言处](https://docs.qq.com/doc/" + DOC_ID + ")\n"
+                "下方为本站评论区：无需注册登录，留言提交后经管理员审核才会公开显示。\n"
             )
         (DOCS_DIR / page["file"]).write_text("\n".join(lines), encoding="utf-8")
         written.append(page["file"])

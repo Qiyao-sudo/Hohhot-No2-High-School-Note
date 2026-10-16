@@ -163,6 +163,9 @@ def main():
     # 生成本机密钥对应的 ecosystem(服务器端唯一配置源, 首次部署即自动创建进程)
     api_key = os.environ.get("DEEPSEEK_API_KEY", "")
     key_js = repr(api_key) if api_key else "''"
+    # 评论审核后台密码(未设置则管理接口关闭, 公开评论不受影响)
+    admin_pw = os.environ.get("COMMENT_ADMIN_PASSWORD", "")
+    admin_pw_js = repr(admin_pw) if admin_pw else "''"
     eco = (
         "module.exports = {\n"
         "  apps: [{\n"
@@ -171,6 +174,7 @@ def main():
         f"    cwd: '{R}/server',\n"
         "    env: {\n"
         f"      DEEPSEEK_API_KEY: {key_js},\n"
+        f"      COMMENT_ADMIN_PASSWORD: {admin_pw_js},\n"
         "      PORT: 8787,\n"
         "      HOST: '127.0.0.1',\n"
         "    },\n"

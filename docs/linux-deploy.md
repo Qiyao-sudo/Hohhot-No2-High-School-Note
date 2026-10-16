@@ -115,7 +115,9 @@ curl -I http://127.0.0.1/ | head -1       # 经 Nginx: 200
 浏览器打开 `http://服务器IP/`(或域名):
 - 首页/文档页样式正常(无"裸 HTML"感);
 - 导航「文档助手」提问一句: 回答**逐字流式**出现(一坨一次吐出 = 第 3 节缓冲没关);
-- 回答里的 `[[n]]` 角标和"来源"卡片可点击, 跳到对应文档锚点。
+- 回答里的 `[[n]]` 角标和"来源"卡片可点击, 跳到对应文档锚点;
+- 「留言处」页底部有评论区, 提交留言后提示"审核通过后显示";
+- 打开 `/admin` 输入管理密码可登录, 能看到刚提交的待审留言。
 
 ## 5. 日常更新(以后只做这一件事)
 
@@ -136,6 +138,8 @@ npm run deploy -- --skip-build  # 只重推现有产物(改了服务器配置之
 | 重启服务 | `pm2 reload hs2` |
 | 手工回滚上一版 | `cd /www/hs2/deploy && rm -rf server dist && mv server.old server && mv dist.old dist && pm2 reload hs2` |
 | 清 pm2 旧日志 | `pm2 flush hs2` |
+| 备份数据文件 | `cp /www/hs2/comments.db* /www/hs2/visits.json <备份目录>/`(SQLite 留言库与访问计数, 部署不覆盖但换机/重装需手动带走) |
+| 评论审核后台 | 统一管理后台 `https://admin.inknook.ink`(密码见服务器 `/etc/inknook-admin.env`) |
 | 内存/CPU 面板 | `pm2 monit` |
 | 重启服务器后自启 | 首次部署后执行过 `pm2 save` 即自动恢复 |
 

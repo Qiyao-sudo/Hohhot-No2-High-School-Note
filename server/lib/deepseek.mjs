@@ -56,9 +56,10 @@ async function request(payload, { apiKey, baseUrl }, signal) {
 /**
  * 流式对话补全(SSE), 逐段 yield { type:'delta', text }, 最后 yield { type:'done', usage }。
  * 需要完整文本时由调用方自行拼接 delta。
+ * config 可传入自定义模型配置(llm-settings.llmConfig 的返回值)；缺省用环境变量。
  */
-export async function* streamChat({ messages, temperature, maxTokens, signal }) {
-  const cfg = deepseekConfig()
+export async function* streamChat({ messages, temperature, maxTokens, signal, config }) {
+  const cfg = config || deepseekConfig()
   const payload = {
     model: cfg.model,
     messages,

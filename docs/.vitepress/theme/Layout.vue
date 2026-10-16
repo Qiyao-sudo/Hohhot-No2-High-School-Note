@@ -5,7 +5,8 @@ import { useData, withBase } from 'vitepress'
 import {
   PhSidebarSimple,
 } from '@phosphor-icons/vue'
-import WalineComment from './WalineComment.vue'
+import CommentSection from './CommentSection.vue'
+import ShareBar from './ShareBar.vue'
 import ImageLightbox from './ImageLightbox.vue'
 import SidebarIcons from './SidebarIcons.vue'
 import SiteFooter from './SiteFooter.vue'
@@ -60,8 +61,10 @@ onMounted(() => {
       </a>
     </template>
     <template #doc-after>
-      <!-- 在带 comment: true 的页面(如留言处)渲染 Waline 评论 -->
-      <WalineComment v-if="frontmatter.comment" />
+      <!-- 分享栏(复制链接/扫码/海报), frontmatter.share:false 可单独关闭 -->
+      <ShareBar v-if="frontmatter.share !== false" />
+      <!-- 在带 comment: true 的页面(如留言处)渲染评论区(自建, 提交后经审核显示) -->
+      <CommentSection v-if="frontmatter.comment" />
     </template>
     <!-- 全站图片点击放大(layout-bottom 插槽保证始终渲染) -->
     <template #layout-bottom>

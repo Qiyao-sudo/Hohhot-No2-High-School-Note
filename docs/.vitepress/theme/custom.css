@@ -625,23 +625,6 @@
   }
 }
 
-/* ---------------------------------------------------------------- Waline */
-
-.waline-wrapper .wl-btn,
-.waline-wrapper .wl-btn.primary {
-  border-radius: 999px;
-}
-
-.waline-wrapper .wl-btn.primary {
-  background: var(--vp-c-brand-1);
-  border-color: var(--vp-c-brand-1);
-}
-
-.waline-wrapper .wl-btn.primary:hover {
-  background: var(--vp-c-brand-2);
-  border-color: var(--vp-c-brand-2);
-}
-
 /* ---------------------------------------------------------------- 侧栏开关 */
 
 .sidebar-toggle {
@@ -882,13 +865,14 @@
   gap: 7px;
 }
 
-.waline-wrapper h2#comment {
+/* 评论区标题(CommentSection): 图标与文字对齐, 图标用品牌色 */
+.comment-section h2#comment {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.waline-wrapper h2#comment svg {
+.comment-section h2#comment svg {
   color: var(--vp-c-brand-1);
 }
 

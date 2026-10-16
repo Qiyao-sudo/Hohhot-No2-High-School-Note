@@ -81,6 +81,12 @@ location /api/assistant/ {
 | `ASSISTANT_RATE_ASK` | `30`（次/小时/IP，总量兜底） | 后端 |
 | `ASSISTANT_RATE_SEARCH_MIN` | `20`（次/分钟/IP） | 后端 |
 | `ASSISTANT_RATE_SEARCH` | `120`（次/小时/IP） | 后端 |
+| `COMMENT_ADMIN_PASSWORD` | （无；不设则评论审核后台整体关闭，公开评论不受影响） | 后端 |
+| `COMMENT_RATE_SUBMIT_MIN` | `3`（次/分钟/IP，留言提交） | 后端 |
+| `COMMENT_RATE_SUBMIT` | `10`（次/小时/IP，留言提交） | 后端 |
+| `COMMENT_RATE_LIST_MIN` | `30`（次/分钟/IP，评论列表读取） | 后端 |
+| `COMMENT_RATE_LIST` | `120`（次/小时/IP，评论列表读取） | 后端 |
+| `COMMENTS_FILE` | `<部署根>/comments.json`（与 visits.json 同级，部署不覆盖） | 后端 |
 | `ASSISTANT_VISION` | `1`（识图输入开关，`0` 关闭） | 后端 |
 | `ASSISTANT_IMAGE_ROOT` | 静态站根目录（自动探测） | 后端 |
 | `PORT` | `8787` | 后端 |
@@ -88,7 +94,26 @@ location /api/assistant/ {
 | `STATIC_ROOT` | `<server>/../dist`（同源托管静态站） | 后端 |
 | `ASSISTANT_API` | `/api/assistant`（同源默认，无需设置） | **前端构建** |
 
-## 四、知识库更新
+## 四、评论区与审核后台
+
+留言处页面的评论区与助手共用同一后端进程（同源部署无需额外配置）：
+
+- **流程**：访客填昵称（必填）+ 内容提交 → 进入待审（`pending`，公开列表不可见）
+  → 站长在审核后台「通过」→ 公开展示；「驳回」仅后台可见，「删除」彻底移除，
+  驳回过的可再恢复通过。站长可附「站长回复」，随评论一同公开。
+- **审核后台**：浏览器打开 `https://站点域名/admin`（本地即 `http://localhost:8787/admin`），
+  输入 `COMMENT_ADMIN_PASSWORD` 登录。token 有效期 7 天，改密码即全部失效。
+- **数据**：存部署根目录 `comments.json`（与 `visits.json` 同级），原子切换部署不会
+  覆盖；`deploy.py` 会自动把本机 `.env` 里的 `COMMENT_ADMIN_PASSWORD` 透传到服务器
+  ecosystem 配置。
+- **安全**：内容原样存储、前端纯文本渲染（自动转义，无 XSS 面）；提交限流
+  3 次/分钟 + 10 次/小时/IP；登录尝试限流 3 次/分钟 + 10 次/小时/IP（防爆破）；
+  公开接口响应不含访客 IP。
+- **未配置 `COMMENT_ADMIN_PASSWORD` 时**：公开评论提交/展示照常，仅 `/admin` 管理
+  接口关闭（503）。
+- 测试：`node scripts/e2e-comments.mjs`（自包含，独立端口 + 临时数据文件）。
+
+## 五、知识库更新
 
 知识库在构建时生成，不需要单独维护：
 
@@ -101,7 +126,7 @@ location /api/assistant/ {
   文字），该行为可用 `ASSISTANT_VISION=0` 关闭；
 - 服务器的 `sync.sh` 每次同步都会重新构建，部署即用新知识库。
 
-## 五、费用与安全提示
+## 六、费用与安全提示
 
 - flash 档模型按 token 计费，一次典型问答约 2-3k token（约几厘钱）；附图识图时
   每张图约增加 1k token、每次最多附 3 张；后端限流为双层——每 IP 每分钟 5 次问答 /
