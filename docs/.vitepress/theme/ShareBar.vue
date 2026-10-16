@@ -1,17 +1,17 @@
 <script setup lang="ts">
-// 页面底部分享栏: 复制链接 / 微信扫码 / 系统分享 / 生成海报。
-// - 挂载于 Layout 的 doc-after 插槽(评论区上方), frontmatter.share !== false 时渲染
-// - 页面二维码与海报均在前端本地生成(qrcode + Canvas), 不依赖微信 JS-SDK
-//   (账号无自定义分享接口权限, 该方案已回退, 见 git 历史)
-// - 海报三种风格可切换: 简约白 / 品牌蓝 / 校园照片(照片加载失败自动回退品牌蓝)
+// 页面底部分享栏: 单一「分享」按钮打开统一弹窗。
+// 弹窗内: 快捷分享(复制链接/系统分享) + 微信扫码(本页二维码) + 海报生成。
+// - 海报四种风格: 简约白 / 品牌蓝 / 上图下文 / 全图沉浸
+//   图片风格可选背景(校园航拍 + 官方照片 posters/*.jpg), Canvas 前端本地生成
+// - 不依赖微信 JS-SDK(账号无自定义分享接口权限, 该方案已回退, 见 git 历史)
+// - 挂载于 Layout 的 doc-after 插槽, frontmatter.share !== false 时渲染
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useData, useRoute, withBase } from 'vitepress'
 import {
+  PhShareFat,
   PhCopy,
   PhCheck,
-  PhWechatLogo,
   PhShareNetwork,
-  PhImage,
   PhX,
   PhDownloadSimple,
 } from '@phosphor-icons/vue'
@@ -36,7 +36,7 @@ const pageTitle = computed(
   () => (page.value.title || '').trim() || SITE_TITLE
 )
 
-/* ---------------- 分享栏按钮 ---------------- */
+/* ---------------- 快捷分享 ---------------- */
 
 const copied = ref(false)
 let copiedTimer: ReturnType<typeof setTimeout> | null = null
@@ -45,7 +45,6 @@ async function copyLink() {
   try {
     await navigator.clipboard.writeText(pageUrl.value)
   } catch {
-    // 剪贴板 API 不可用时退回传统方案
     const ta = document.createElement('textarea')
     ta.value = pageUrl.value
     ta.style.position = 'fixed'
@@ -72,25 +71,23 @@ async function nativeShare() {
   } catch { /* 用户取消或不支持, 忽略 */ }
 }
 
-/* ---------------- 弹层(二维码 / 海报) ---------------- */
+/* ---------------- 统一弹窗 ---------------- */
 
-// 'qr' 页面二维码 | 'poster' 海报 | null 关闭
-const overlay = ref<'qr' | 'poster' | null>(null)
-
+const open = ref(false)
 const qrDataUrl = ref('')
 
-function openOverlay(mode: 'qr' | 'poster') {
-  overlay.value = mode
-  if (mode === 'qr') ensureQr()
-  else nextTick(() => renderPoster())
+function openModal() {
+  open.value = true
+  ensureQr()
+  nextTick(() => renderPoster())
 }
 
-function closeOverlay() {
-  overlay.value = null
+function closeModal() {
+  open.value = false
 }
 
 function onKey(e: KeyboardEvent) {
-  if (e.key === 'Escape') closeOverlay()
+  if (e.key === 'Escape') closeModal()
 }
 
 onMounted(() => window.addEventListener('keydown', onKey))
@@ -99,11 +96,11 @@ onBeforeUnmount(() => {
   if (copiedTimer) clearTimeout(copiedTimer)
 })
 
-// 路由切换: 关闭弹层、复位按钮状态
+// 路由切换: 关闭弹窗、复位按钮状态
 watch(
   () => route.path,
   () => {
-    closeOverlay()
+    closeModal()
     copied.value = false
   }
 )
@@ -118,9 +115,9 @@ async function ensureQr() {
   })
 }
 
-/* ---------------- 海报 ---------------- */
+/* ---------------- 海报: 风格 × 背景 ---------------- */
 
-type PosterStyle = 'white' | 'blue' | 'photo'
+type PosterStyle = 'white' | 'blue' | 'photo' | 'immersive'
 
 const posterStyle = ref<PosterStyle>('blue')
 const posterDataUrl = ref('')
@@ -130,8 +127,27 @@ const posterCanvas = ref<HTMLCanvasElement | null>(null)
 const styleOptions: { key: PosterStyle; label: string }[] = [
   { key: 'white', label: '简约白' },
   { key: 'blue', label: '品牌蓝' },
-  { key: 'photo', label: '校园照片' },
+  { key: 'photo', label: '上图下文' },
+  { key: 'immersive', label: '全图沉浸' },
 ]
+
+const isPhotoStyle = computed(() => posterStyle.value === 'photo' || posterStyle.value === 'immersive')
+
+// 图片风格可选背景: 首张为源文档航拍图, 其余为官方照片(docs/public/posters/)
+const bgOptions = [
+  { file: '/images/hero.jpg', label: '校园航拍' },
+  { file: '/posters/bg14.jpg', label: '操场全景' },
+  { file: '/posters/bg02.jpg', label: '校门主楼' },
+  { file: '/posters/bg04.jpg', label: '教学楼' },
+  { file: '/posters/bg21.jpg', label: '连廊' },
+  { file: '/posters/bg32.jpg', label: '楼与蓝天' },
+  { file: '/posters/bg34.jpg', label: '绿树庭院' },
+  { file: '/posters/bg38.jpg', label: '广场' },
+  { file: '/posters/bg56.jpg', label: '对称楼群' },
+  { file: '/posters/bg66.jpg', label: '操场跑道' },
+  { file: '/posters/bg62.jpg', label: '雕塑' },
+]
+const bgIndex = ref(0)
 
 const posterName = computed(
   () => `${pageTitle.value.slice(0, 20)} - 呼市二中分享海报.png`
@@ -140,6 +156,12 @@ const posterName = computed(
 function switchStyle(s: PosterStyle) {
   if (posterStyle.value === s) return
   posterStyle.value = s
+  renderPoster()
+}
+
+function switchBg(i: number) {
+  if (bgIndex.value === i) return
+  bgIndex.value = i
   renderPoster()
 }
 
@@ -166,17 +188,18 @@ async function renderPoster() {
       }).then(loadImage),
       loadImage(withBase('/og-badge.png')).catch(() => null),
     ])
-    // 校园照片风格: hero 图在自动同步目录, 可能缺失 → 整体回退品牌蓝
-    let heroImg: HTMLImageElement | null = null
-    if (posterStyle.value === 'photo') {
-      heroImg = await loadImage(withBase('/images/hero.jpg')).catch(() => null)
-      if (!heroImg) posterStyle.value = 'blue'
+    // 图片风格: 加载所选背景; 失败(如航拍图被同步清掉)自动回退品牌蓝
+    let bgImg: HTMLImageElement | null = null
+    if (isPhotoStyle.value) {
+      bgImg = await loadImage(withBase(bgOptions[bgIndex.value].file)).catch(() => null)
+      if (!bgImg) posterStyle.value = 'blue'
     }
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     if (posterStyle.value === 'white') drawWhite(ctx, canvas, qrImg, badgeImg)
     else if (posterStyle.value === 'blue') drawBlue(ctx, canvas, qrImg, badgeImg)
-    else drawPhoto(ctx, canvas, qrImg, badgeImg, heroImg!)
+    else if (posterStyle.value === 'photo') drawPhoto(ctx, canvas, qrImg, badgeImg, bgImg!)
+    else drawImmersive(ctx, canvas, qrImg, badgeImg, bgImg!)
     posterDataUrl.value = canvas.toDataURL('image/png')
   } finally {
     posterRendering.value = false
@@ -253,22 +276,30 @@ function wrapCenter(
   return y + (lines.length - 1) * lineH
 }
 
-// 底部公共块: 二维码卡 + 提示 + 网址 + 校训
+// cover 模式铺满绘制(整图或指定高度区域)
+function drawCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement, W: number, regionH: number, offsetY = 0
+) {
+  const scale = Math.max(W / img.width, regionH / img.height)
+  const dw = img.width * scale
+  const dh = img.height * scale
+  ctx.drawImage(img, (W - dw) / 2, offsetY + (regionH - dh) / 2, dw, dh)
+}
+
+// 底部公共块: 二维码白卡 + 提示 + 网址 + 校训
 function drawFooterBlock(
   ctx: CanvasRenderingContext2D,
   qr: HTMLImageElement,
   opts: {
-    dark?: boolean      // 文字是否深色(白底风格)
-    cardY: number       // 卡片顶部 y
+    cardY: number
     urlColor: string
-    textColor: string
-    mottoColor: string
     hintColor: string
+    mottoColor: string
   }
 ) {
   const W = 1080
   const { cardY } = opts
-  // 二维码白卡(任何风格都保持白底保证可扫)
   const cardW = 340
   ctx.save()
   ctx.shadowColor = 'rgba(0, 0, 0, 0.14)'
@@ -311,7 +342,6 @@ function drawWhite(
   ctx.font = `600 46px ${FONT}`
   ctx.fillText(SITE_TITLE, W / 2, 400)
 
-  // 标题(蓝色竖标风格的分隔线)
   ctx.strokeStyle = '#e6e6e2'
   ctx.lineWidth = 2
   ctx.beginPath()
@@ -334,7 +364,6 @@ function drawWhite(
   drawFooterBlock(ctx, qr, {
     cardY: 800,
     urlColor: '#2f5ad8',
-    textColor: '#26281f',
     hintColor: '#55564d',
     mottoColor: '#8a8b80',
   })
@@ -354,7 +383,6 @@ function drawBlue(
   ctx.fillStyle = grad
   ctx.fillRect(0, 0, W, H)
 
-  // 弱装饰圆环
   ctx.save()
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)'
   ctx.lineWidth = 60
@@ -396,28 +424,23 @@ function drawBlue(
   drawFooterBlock(ctx, qr, {
     cardY: 800,
     urlColor: '#ffffff',
-    textColor: '#ffffff',
     hintColor: 'rgba(255, 255, 255, 0.82)',
     mottoColor: 'rgba(255, 255, 255, 0.55)',
   })
 }
 
-/* ---------------- 风格三: 校园照片 ---------------- */
+/* ---------------- 风格三: 上图下文(背景可选) ---------------- */
 
 function drawPhoto(
   ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
   qr: HTMLImageElement, badge: HTMLImageElement | null,
-  hero: HTMLImageElement
+  bg: HTMLImageElement
 ) {
   const W = canvas.width
   const H = canvas.height
   const photoH = 640
-  // 封面裁切(cover)
-  const scale = Math.max(W / hero.width, photoH / hero.height)
-  const dw = hero.width * scale
-  const dh = hero.height * scale
-  ctx.drawImage(hero, (W - dw) / 2, (photoH - dh) / 2, dw, dh)
-  // 底部渐隐, 让照片过渡到留白区
+  drawCover(ctx, bg, W, photoH)
+  // 底部渐隐过渡到留白区
   const fade = ctx.createLinearGradient(0, photoH - 260, 0, photoH)
   fade.addColorStop(0, 'rgba(255, 255, 255, 0)')
   fade.addColorStop(1, 'rgba(255, 255, 255, 1)')
@@ -446,77 +469,124 @@ function drawPhoto(
   drawFooterBlock(ctx, qr, {
     cardY: 1040,
     urlColor: '#2f5ad8',
-    textColor: '#26281f',
     hintColor: '#55564d',
     mottoColor: '#8a8b80',
+  })
+}
+
+/* ---------------- 风格四: 全图沉浸(背景可选) ---------------- */
+
+function drawImmersive(
+  ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
+  qr: HTMLImageElement, badge: HTMLImageElement | null,
+  bg: HTMLImageElement
+) {
+  const W = canvas.width
+  const H = canvas.height
+  drawCover(ctx, bg, W, H)
+  // 深色渐变遮罩保证文字可读
+  const veil = ctx.createLinearGradient(0, 0, 0, H)
+  veil.addColorStop(0, 'rgba(10, 16, 38, 0.42)')
+  veil.addColorStop(0.5, 'rgba(10, 16, 38, 0.30)')
+  veil.addColorStop(1, 'rgba(10, 16, 38, 0.80)')
+  ctx.fillStyle = veil
+  ctx.fillRect(0, 0, W, H)
+
+  if (badge) {
+    circleImage(ctx, badge, W / 2, 200, 100, 'rgba(255, 255, 255, 0.92)', 8)
+  }
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#ffffff'
+  ctx.font = `600 46px ${FONT}`
+  ctx.fillText(SITE_TITLE, W / 2, 392)
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(280, 456)
+  ctx.lineTo(W - 280, 456)
+  ctx.stroke()
+
+  ctx.fillStyle = '#ffffff'
+  ctx.font = `700 66px ${FONT}`
+  const titleEndY = wrapCenter(ctx, pageTitle.value, W / 2, 566, 880, 90, 2)
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.78)'
+  ctx.font = `400 32px ${FONT}`
+  ctx.fillText('历届学长整理 · 免费开放 · 持续更新', W / 2, titleEndY + 140)
+
+  drawFooterBlock(ctx, qr, {
+    cardY: 780,
+    urlColor: '#ffffff',
+    hintColor: 'rgba(255, 255, 255, 0.85)',
+    mottoColor: 'rgba(255, 255, 255, 0.6)',
   })
 }
 </script>
 
 <template>
   <div class="share-bar">
-    <span class="share-bar-label">分享</span>
-    <div class="share-bar-actions">
-      <button type="button" class="share-btn" @click="copyLink">
-        <component
-          :is="copied ? PhCheck : PhCopy"
-          :size="16"
-          weight="bold"
-          aria-hidden="true"
-        />
-        {{ copied ? '已复制' : '复制链接' }}
-      </button>
-      <button type="button" class="share-btn" @click="openOverlay('qr')">
-        <component :is="PhWechatLogo" :size="16" weight="fill" aria-hidden="true" />
-        微信扫码
-      </button>
-      <button
-        v-if="canNativeShare"
-        type="button"
-        class="share-btn"
-        @click="nativeShare"
-      >
-        <component :is="PhShareNetwork" :size="16" weight="bold" aria-hidden="true" />
-        系统分享
-      </button>
-      <button type="button" class="share-btn" @click="openOverlay('poster')">
-        <component :is="PhImage" :size="16" weight="bold" aria-hidden="true" />
-        生成海报
-      </button>
-    </div>
+    <span class="share-bar-label">觉得有用？分享给同学</span>
+    <button type="button" class="share-main-btn" @click="openModal">
+      <component :is="PhShareFat" :size="16" weight="fill" aria-hidden="true" />
+      分享
+    </button>
   </div>
 
   <Teleport to="body">
     <Transition name="share-fade">
-      <div v-if="overlay" class="share-overlay" @click.self="closeOverlay">
+      <div v-if="open" class="share-overlay" @click.self="closeModal">
         <div class="share-modal" role="dialog" aria-modal="true">
           <button
             type="button"
             class="share-modal-close"
             aria-label="关闭"
-            @click="closeOverlay"
+            @click="closeModal"
           >
             <component :is="PhX" :size="18" weight="bold" aria-hidden="true" />
           </button>
 
-          <!-- 页面二维码 -->
-          <template v-if="overlay === 'qr'">
-            <h3 class="share-modal-title">微信扫一扫</h3>
-            <p class="share-modal-sub">在手机上打开本页，转发给同学或朋友圈</p>
-            <div class="share-qr-wrap">
-              <img
-                v-if="qrDataUrl"
-                :src="qrDataUrl"
-                alt="本页二维码"
-                @click.stop
-              >
-            </div>
-            <p class="share-modal-url">{{ pageUrl }}</p>
-          </template>
+          <h3 class="share-modal-title">分享本页</h3>
+
+          <!-- 快捷分享 -->
+          <div class="quick-actions">
+            <button type="button" class="quick-btn" @click="copyLink">
+              <component
+                :is="copied ? PhCheck : PhCopy"
+                :size="18"
+                weight="bold"
+                aria-hidden="true"
+              />
+              {{ copied ? '已复制' : '复制链接' }}
+            </button>
+            <button
+              v-if="canNativeShare"
+              type="button"
+              class="quick-btn"
+              @click="nativeShare"
+            >
+              <component :is="PhShareNetwork" :size="18" weight="bold" aria-hidden="true" />
+              系统分享
+            </button>
+          </div>
+
+          <!-- 微信扫码 -->
+          <div class="qr-inline">
+            <img
+              v-if="qrDataUrl"
+              :src="qrDataUrl"
+              alt="本页二维码"
+              title="微信扫一扫，在手机上打开本页"
+              @click.stop
+            >
+            <div v-else class="qr-loading">二维码生成中…</div>
+            <p class="qr-inline-text">微信扫一扫 · 在手机上打开本页</p>
+          </div>
+
+          <div class="share-divider" aria-hidden="true"></div>
 
           <!-- 海报 -->
-          <template v-else>
-            <h3 class="share-modal-title">分享海报</h3>
+          <div class="poster-section">
             <div class="poster-styles">
               <button
                 v-for="s in styleOptions"
@@ -529,6 +599,21 @@ function drawPhoto(
                 {{ s.label }}
               </button>
             </div>
+
+            <div v-if="isPhotoStyle" class="poster-bgs">
+              <button
+                v-for="(bg, i) in bgOptions"
+                :key="bg.file"
+                type="button"
+                class="bg-thumb"
+                :class="{ active: bgIndex === i }"
+                :title="bg.label"
+                @click="switchBg(i)"
+              >
+                <img :src="withBase(bg.file)" :alt="bg.label" loading="lazy" @click.stop>
+              </button>
+            </div>
+
             <div class="poster-canvas-wrap">
               <canvas
                 v-show="posterDataUrl"
@@ -538,6 +623,7 @@ function drawPhoto(
               />
               <div v-if="posterRendering" class="poster-loading">生成中…</div>
             </div>
+
             <div class="poster-actions">
               <a
                 class="poster-download"
@@ -551,7 +637,7 @@ function drawPhoto(
               </a>
               <span class="poster-hint">手机端可长按图片保存</span>
             </div>
-          </template>
+          </div>
         </div>
       </div>
     </Transition>
@@ -571,43 +657,35 @@ function drawPhoto(
 }
 
 .share-bar-label {
-  font-size: 0.78rem;
-  letter-spacing: 0.14em;
-  color: var(--vp-c-text-3);
-  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--vp-c-text-2);
 }
 
-.share-bar-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-}
-
-.share-btn {
+.share-main-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.42rem 0.95rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--vp-c-text-2);
+  gap: 0.45rem;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--vp-c-brand-1);
   background: var(--vp-c-bg-elv);
-  border: 1px solid var(--vp-c-border);
+  border: 1px solid var(--vp-c-brand-1);
   border-radius: 999px;
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
 }
 
-.share-btn:hover {
-  color: var(--vp-c-brand-1);
-  border-color: var(--vp-c-brand-1);
+.share-main-btn:hover {
+  color: #fff;
+  background: var(--vp-c-brand-1);
 }
 
-.share-btn:active {
+.share-main-btn:active {
   transform: translateY(1px);
 }
 
-/* ---------------- 弹层 ---------------- */
+/* ---------------- 弹窗 ---------------- */
 
 .share-overlay {
   position: fixed;
@@ -626,8 +704,8 @@ function drawPhoto(
   background: var(--vp-c-bg-elv);
   border: 1px solid var(--vp-c-border);
   border-radius: var(--hs2-radius, 12px);
-  padding: 1.6rem 1.6rem 1.3rem;
-  width: min(420px, calc(100vw - 2rem));
+  padding: 1.5rem 1.5rem 1.2rem;
+  width: min(430px, calc(100vw - 2rem));
   max-height: calc(100dvh - 3rem);
   overflow-y: auto;
   text-align: center;
@@ -656,52 +734,95 @@ function drawPhoto(
 }
 
 .share-modal-title {
-  margin: 0.2rem 0 0.3rem;
+  margin: 0.2rem 0 0.9rem;
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--vp-c-text-1);
   letter-spacing: 0.02em;
 }
 
-.share-modal-sub {
-  margin: 0 0 1rem;
-  font-size: 0.82rem;
-  color: var(--vp-c-text-3);
-}
-
-.share-qr-wrap {
+/* 快捷分享按钮 */
+.quick-actions {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
-.share-qr-wrap img {
-  width: min(240px, 60vw);
-  height: auto;
+.quick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.48rem 1.1rem;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.quick-btn:hover {
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+}
+
+/* 内联二维码 */
+.qr-inline {
+  margin-top: 1rem;
+}
+
+.qr-inline img {
+  width: 132px;
+  height: 132px;
   border: 1px solid var(--vp-c-border);
   border-radius: var(--hs2-radius-sm, 6px);
   margin: 0;
   cursor: default;
+  background: #fff;
 }
 
-.share-modal-url {
-  margin: 0.9rem 0 0.2rem;
+.qr-loading {
+  width: 132px;
+  height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
   font-size: 0.78rem;
   color: var(--vp-c-text-3);
-  word-break: break-all;
-  font-family: var(--vp-font-family-mono, monospace);
+  border: 1px dashed var(--vp-c-border);
+  border-radius: var(--hs2-radius-sm, 6px);
 }
 
-/* ---------------- 海报 ---------------- */
+.qr-inline-text {
+  margin: 0.5rem 0 0;
+  font-size: 0.76rem;
+  color: var(--vp-c-text-3);
+}
+
+.share-divider {
+  height: 1px;
+  background: var(--vp-c-divider);
+  margin: 1.2rem 0 1rem;
+}
+
+/* 海报 */
+.poster-section {
+  text-align: center;
+}
 
 .poster-styles {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  margin: 0.35rem 0 1rem;
 }
 
 .poster-style-btn {
-  padding: 0.35rem 0.9rem;
+  padding: 0.35rem 0.85rem;
   font-size: 0.82rem;
   font-weight: 500;
   color: var(--vp-c-text-2);
@@ -721,6 +842,47 @@ function drawPhoto(
   color: #fff;
   background: var(--vp-c-brand-1);
   border-color: var(--vp-c-brand-1);
+}
+
+/* 背景缩略图 */
+.poster-bgs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.85rem 0 1rem;
+}
+
+.bg-thumb {
+  padding: 0;
+  width: 52px;
+  height: 40px;
+  border: 2px solid var(--vp-c-border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--vp-c-bg);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.bg-thumb:hover {
+  transform: translateY(-1px);
+}
+
+.bg-thumb.active {
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 0 0 2px var(--vp-c-brand-soft, rgba(47, 90, 216, 0.18));
+}
+
+.bg-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
 }
 
 .poster-canvas-wrap {
