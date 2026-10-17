@@ -962,7 +962,7 @@ function drawImmersive(
 /* 背景滑轨: 单行横向滚动, 触屏横滑 + 桌面箭头翻页 */
 .bg-rail {
   position: relative;
-  margin: 0.85rem 0 0;
+  margin: 1rem 0 0;
 }
 
 .poster-bgs {
@@ -1049,6 +1049,8 @@ function drawImmersive(
   position: relative;
   display: flex;
   justify-content: center;
+  /* 与上方滑轨/风格按钮、下方操作区都拉开距离 */
+  margin-top: 1.6rem;
 }
 
 .poster-canvas-wrap canvas {
