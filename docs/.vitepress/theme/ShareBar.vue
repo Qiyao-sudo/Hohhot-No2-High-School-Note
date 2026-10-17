@@ -301,6 +301,20 @@ function wrapCenter(
   return y + (lines.length - 1) * lineH
 }
 
+// 字号自适应: 从 size 起逐级缩小直到 text 宽度不超过 maxW(防溢出保险)
+function fitFont(
+  ctx: CanvasRenderingContext2D,
+  weight: number | string, size: number, text: string, maxW: number
+): number {
+  let s = size
+  ctx.font = `${weight} ${s}px ${FONT}`
+  while (ctx.measureText(text).width > maxW && s > 16) {
+    s -= 2
+    ctx.font = `${weight} ${s}px ${FONT}`
+  }
+  return s
+}
+
 // 左对齐自动换行(超出 maxLines 截断加省略号), 返回结束 y
 function wrapLeft(
   ctx: CanvasRenderingContext2D,
@@ -722,9 +736,9 @@ function drawSplit(
   ctx.font = `400 28px ${FONT}`
   ctx.fillText('历届学长整理 · 免费开放', 90, titleEndY + 148)
 
-  // 左下二维码卡 + 右侧文字列
+  // 左下二维码卡 + 右侧提示文字(网址放卡片下方, 避免穿过分界线压到照片)
   const cardX = 90
-  const cardY = 1020
+  const cardY = 1000
   const cardW = 260
   ctx.save()
   ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
@@ -737,18 +751,22 @@ function drawSplit(
   ctx.drawImage(qr, cardX + 20, cardY + 20, cardW - 40, cardW - 40)
 
   const tx = cardX + cardW + 42
+  const colW = px - tx - 28 // 右侧文字列可用宽度(止于分界线前)
   ctx.textAlign = 'left'
   ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
-  ctx.font = `500 30px ${FONT}`
-  ctx.fillText('长按识别二维码', tx, cardY + 84)
-  ctx.fillText('查看本文全文', tx, cardY + 130)
-  ctx.fillStyle = '#ffffff'
-  ctx.font = `700 36px ${FONT}`
-  ctx.fillText(SITE_HOST, tx, cardY + 200)
+  fitFont(ctx, 500, 30, '长按识别二维码', colW)
+  ctx.fillText('长按识别二维码', tx, cardY + 106)
+  fitFont(ctx, 400, 28, '查看本文全文', colW)
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.68)'
+  ctx.fillText('查看本文全文', tx, cardY + 152)
 
+  // 网址与校训: 卡片下方, 均限制在左栏内
+  fitFont(ctx, 700, 36, SITE_HOST, px - cardX - 28)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillText(SITE_HOST, cardX, cardY + cardW + 76)
+  fitFont(ctx, 400, 24, SITE_MOTTO, px - cardX - 28)
   ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
-  ctx.font = `400 24px ${FONT}`
-  ctx.fillText(SITE_MOTTO, cardX, cardY + cardW + 84)
+  ctx.fillText(SITE_MOTTO, cardX, cardY + cardW + 132)
 }
 
 /* ---------------- 风格五: 上图下文(背景可选) ---------------- */
