@@ -79,11 +79,9 @@ async function nativeShare() {
 /* ---------------- 统一弹窗 ---------------- */
 
 const open = ref(false)
-const qrDataUrl = ref('')
 
 function openModal() {
   open.value = true
-  ensureQr()
   nextTick(() => renderPoster())
 }
 
@@ -109,16 +107,6 @@ watch(
     copied.value = false
   }
 )
-
-async function ensureQr() {
-  if (qrDataUrl.value) return
-  const QRCode = (await import('qrcode')).default
-  qrDataUrl.value = await QRCode.toDataURL(pageUrl.value, {
-    margin: 2,
-    width: 560,
-    color: { dark: '#1b1b1b', light: '#ffffff' },
-  })
-}
 
 /* ---------------- 海报: 风格 × 背景 ---------------- */
 
@@ -723,19 +711,6 @@ function drawImmersive(
             </button>
           </div>
 
-          <!-- 微信扫码 -->
-          <div class="qr-inline">
-            <img
-              v-if="qrDataUrl"
-              :src="qrDataUrl"
-              alt="本页二维码"
-              title="微信扫一扫，在手机上打开本页"
-              @click.stop
-            >
-            <div v-else class="qr-loading">二维码生成中…</div>
-            <p class="qr-inline-text">微信扫一扫 · 在手机上打开本页</p>
-          </div>
-
           <div class="share-divider" aria-hidden="true"></div>
 
           <!-- 海报 -->
@@ -941,40 +916,6 @@ function drawImmersive(
 .quick-btn:hover {
   color: var(--vp-c-brand-1);
   border-color: var(--vp-c-brand-1);
-}
-
-/* 内联二维码 */
-.qr-inline {
-  margin-top: 1rem;
-}
-
-.qr-inline img {
-  width: 132px;
-  height: 132px;
-  border: 1px solid var(--vp-c-border);
-  border-radius: var(--hs2-radius-sm, 6px);
-  margin: 0;
-  cursor: default;
-  background: #fff;
-}
-
-.qr-loading {
-  width: 132px;
-  height: 132px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  font-size: 0.78rem;
-  color: var(--vp-c-text-3);
-  border: 1px dashed var(--vp-c-border);
-  border-radius: var(--hs2-radius-sm, 6px);
-}
-
-.qr-inline-text {
-  margin: 0.5rem 0 0;
-  font-size: 0.76rem;
-  color: var(--vp-c-text-3);
 }
 
 .share-divider {
