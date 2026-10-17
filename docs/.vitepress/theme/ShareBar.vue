@@ -14,7 +14,12 @@ import {
   PhShareNetwork,
   PhX,
   PhDownloadSimple,
+  PhCaretLeft,
+  PhCaretRight,
 } from '@phosphor-icons/vue'
+
+// variant: 'bar'(文档页底部分享栏, 默认) | 'hero'(首页主视觉区的幽灵按钮)
+const props = defineProps<{ variant?: 'bar' | 'hero' }>()
 
 const { page } = useData()
 const route = useRoute()
@@ -117,7 +122,7 @@ async function ensureQr() {
 
 /* ---------------- 海报: 风格 × 背景 ---------------- */
 
-type PosterStyle = 'white' | 'blue' | 'photo' | 'immersive'
+type PosterStyle = 'white' | 'blue' | 'paper' | 'black' | 'photo' | 'immersive'
 
 const posterStyle = ref<PosterStyle>('blue')
 const posterDataUrl = ref('')
@@ -127,6 +132,8 @@ const posterCanvas = ref<HTMLCanvasElement | null>(null)
 const styleOptions: { key: PosterStyle; label: string }[] = [
   { key: 'white', label: '简约白' },
   { key: 'blue', label: '品牌蓝' },
+  { key: 'paper', label: '米黄纸感' },
+  { key: 'black', label: '黑金典雅' },
   { key: 'photo', label: '上图下文' },
   { key: 'immersive', label: '全图沉浸' },
 ]
@@ -147,6 +154,9 @@ const bgOptions = [
   { file: '/posters/bg56.jpg', thumb: '/posters/thumbs/bg56.jpg', label: '对称楼群' },
   { file: '/posters/bg66.jpg', thumb: '/posters/thumbs/bg66.jpg', label: '操场跑道' },
   { file: '/posters/bg62.jpg', thumb: '/posters/thumbs/bg62.jpg', label: '雕塑' },
+  { file: '/posters/bg60.jpg', thumb: '/posters/thumbs/bg60.jpg', label: '仰拍教学楼' },
+  { file: '/posters/bg35.jpg', thumb: '/posters/thumbs/bg35.jpg', label: '夜景灯光' },
+  { file: '/posters/bg68.jpg', thumb: '/posters/thumbs/bg68.jpg', label: '跑道黄昏' },
 ]
 const bgIndex = ref(0)
 
@@ -167,6 +177,22 @@ function switchBg(i: number) {
   bgIndex.value = i
   renderPoster()
 }
+
+/* 背景滑轨: 左右箭头翻页 + 选中项自动滚到居中 */
+const bgRail = ref<HTMLElement | null>(null)
+
+function scrollRail(dir: -1 | 1) {
+  const rail = bgRail.value
+  if (!rail) return
+  rail.scrollBy({ left: dir * rail.clientWidth * 0.8, behavior: 'smooth' })
+}
+
+watch(bgIndex, async () => {
+  await nextTick()
+  bgRail.value
+    ?.querySelector('.bg-thumb.active')
+    ?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+})
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -206,6 +232,8 @@ async function renderPoster() {
     if (!ctx) return
     if (posterStyle.value === 'white') drawWhite(ctx, canvas, qrImg, badgeImg)
     else if (posterStyle.value === 'blue') drawBlue(ctx, canvas, qrImg, badgeImg)
+    else if (posterStyle.value === 'paper') drawPaper(ctx, canvas, qrImg, badgeImg)
+    else if (posterStyle.value === 'black') drawBlackGold(ctx, canvas, qrImg, badgeImg)
     else if (posterStyle.value === 'photo') drawPhoto(ctx, canvas, qrImg, badgeImg, bgImg!)
     else drawImmersive(ctx, canvas, qrImg, badgeImg, bgImg!)
     posterDataUrl.value = canvas.toDataURL('image/png')
@@ -441,7 +469,119 @@ function drawBlue(
   })
 }
 
-/* ---------------- 风格三: 上图下文(背景可选) ---------------- */
+/* ---------------- 风格三: 米黄纸感 ---------------- */
+
+function drawPaper(
+  ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
+  qr: HTMLImageElement, badge: HTMLImageElement | null
+) {
+  const W = canvas.width
+  const H = canvas.height
+  ctx.fillStyle = '#f8f1e2'
+  ctx.fillRect(0, 0, W, H)
+
+  // 复古双线内框
+  ctx.strokeStyle = '#d8c69c'
+  ctx.lineWidth = 3
+  ctx.strokeRect(44, 44, W - 88, H - 88)
+  ctx.strokeStyle = 'rgba(216, 198, 156, 0.55)'
+  ctx.lineWidth = 1
+  ctx.strokeRect(58, 58, W - 116, H - 116)
+
+  if (badge) {
+    circleImage(ctx, badge, W / 2, 215, 102, '#d8c69c', 12)
+  }
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#5a4a30'
+  ctx.font = `600 46px ${FONT}`
+  ctx.fillText(SITE_TITLE, W / 2, 405)
+
+  ctx.strokeStyle = '#d8c69c'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(300, 472)
+  ctx.lineTo(W - 300, 472)
+  ctx.stroke()
+
+  ctx.fillStyle = '#3e3526'
+  ctx.font = `700 64px ${FONT}`
+  const titleEndY = wrapCenter(ctx, pageTitle.value, W / 2, 580, 880, 88, 2)
+
+  ctx.fillStyle = '#b3894a'
+  roundRect(ctx, W / 2 - 34, titleEndY + 58, 68, 8, 4)
+  ctx.fill()
+
+  ctx.fillStyle = '#8b7b5c'
+  ctx.font = `400 32px ${FONT}`
+  ctx.fillText('历届学长整理 · 免费开放 · 持续更新', W / 2, titleEndY + 150)
+
+  drawFooterBlock(ctx, qr, {
+    cardY: 800,
+    urlColor: '#8a6d3b',
+    hintColor: '#6b5d44',
+    mottoColor: '#9a8a68',
+  })
+}
+
+/* ---------------- 风格四: 黑金典雅 ---------------- */
+
+function drawBlackGold(
+  ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
+  qr: HTMLImageElement, badge: HTMLImageElement | null
+) {
+  const W = canvas.width
+  const H = canvas.height
+  ctx.fillStyle = '#15171d'
+  ctx.fillRect(0, 0, W, H)
+
+  // 顶部金色柔光
+  const glow = ctx.createRadialGradient(W / 2, 180, 60, W / 2, 180, 950)
+  glow.addColorStop(0, 'rgba(212, 175, 106, 0.12)')
+  glow.addColorStop(1, 'rgba(212, 175, 106, 0)')
+  ctx.fillStyle = glow
+  ctx.fillRect(0, 0, W, H)
+
+  // 金色细边框
+  ctx.strokeStyle = 'rgba(212, 175, 106, 0.28)'
+  ctx.lineWidth = 2
+  ctx.strokeRect(36, 36, W - 72, H - 72)
+
+  if (badge) {
+    circleImage(ctx, badge, W / 2, 210, 102, 'rgba(212, 175, 106, 0.85)', 8)
+  }
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#f2e8d5'
+  ctx.font = `600 46px ${FONT}`
+  ctx.fillText(SITE_TITLE, W / 2, 400)
+
+  ctx.strokeStyle = 'rgba(212, 175, 106, 0.45)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(280, 470)
+  ctx.lineTo(W - 280, 470)
+  ctx.stroke()
+
+  ctx.fillStyle = '#ffffff'
+  ctx.font = `700 64px ${FONT}`
+  const titleEndY = wrapCenter(ctx, pageTitle.value, W / 2, 580, 880, 88, 2)
+
+  ctx.fillStyle = '#d4af6a'
+  roundRect(ctx, W / 2 - 34, titleEndY + 58, 68, 8, 4)
+  ctx.fill()
+
+  ctx.fillStyle = 'rgba(242, 232, 213, 0.66)'
+  ctx.font = `400 32px ${FONT}`
+  ctx.fillText('历届学长整理 · 免费开放 · 持续更新', W / 2, titleEndY + 150)
+
+  drawFooterBlock(ctx, qr, {
+    cardY: 800,
+    urlColor: '#d4af6a',
+    hintColor: 'rgba(242, 232, 213, 0.82)',
+    mottoColor: 'rgba(242, 232, 213, 0.45)',
+  })
+}
+
+/* ---------------- 风格五: 上图下文(背景可选) ---------------- */
 
 function drawPhoto(
   ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
@@ -486,7 +626,7 @@ function drawPhoto(
   })
 }
 
-/* ---------------- 风格四: 全图沉浸(背景可选) ---------------- */
+/* ---------------- 风格六: 全图沉浸(背景可选) ---------------- */
 
 function drawImmersive(
   ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
@@ -537,7 +677,18 @@ function drawImmersive(
 </script>
 
 <template>
-  <div class="share-bar">
+  <!-- hero 变体: 首页主视觉区的幽灵按钮(样式由 custom.css 的 .home-hero .btn 提供) -->
+  <button
+    v-if="props.variant === 'hero'"
+    type="button"
+    class="btn btn-ghost share-hero-btn"
+    @click="openModal"
+  >
+    <component :is="PhShareFat" :size="16" weight="fill" aria-hidden="true" />
+    分享本站
+  </button>
+
+  <div v-else class="share-bar">
     <span class="share-bar-label">觉得有用？分享给同学</span>
     <button type="button" class="share-main-btn" @click="openModal">
       <component :is="PhShareFat" :size="16" weight="fill" aria-hidden="true" />
@@ -612,21 +763,43 @@ function drawImmersive(
               </button>
             </div>
 
-            <div v-if="isPhotoStyle" class="poster-bgs">
-              <!-- 缩略图用 CSS 背景(240px 压缩图): 无 img 元素, 点击直达且不触发全局灯箱;
-                   海报绘制加载完整图 bg.file -->
+            <!-- 背景滑轨: 左右箭头翻页, 触屏可横滑, 选中项自动居中 -->
+            <div v-if="isPhotoStyle" class="bg-rail">
               <button
-                v-for="(bg, i) in bgOptions"
-                :key="bg.file"
                 type="button"
-                class="bg-thumb"
-                :class="{ active: bgIndex === i }"
-                :title="bg.label"
-                :aria-label="`背景：${bg.label}`"
-                :style="{ backgroundImage: `url(${withBase(bg.thumb)})` }"
-                @click="switchBg(i)"
-              ></button>
+                class="rail-arrow left"
+                aria-label="向左查看更多背景"
+                @click="scrollRail(-1)"
+              >
+                <component :is="PhCaretLeft" :size="14" weight="bold" aria-hidden="true" />
+              </button>
+              <div ref="bgRail" class="poster-bgs">
+                <!-- 缩略图用 CSS 背景(240px 压缩图): 无 img 元素, 点击直达且不触发全局灯箱;
+                     海报绘制加载完整图 bg.file -->
+                <button
+                  v-for="(bg, i) in bgOptions"
+                  :key="bg.file"
+                  type="button"
+                  class="bg-thumb"
+                  :class="{ active: bgIndex === i }"
+                  :title="bg.label"
+                  :aria-label="`背景：${bg.label}`"
+                  :style="{ backgroundImage: `url(${withBase(bg.thumb)})` }"
+                  @click="switchBg(i)"
+                ></button>
+              </div>
+              <button
+                type="button"
+                class="rail-arrow right"
+                aria-label="向右查看更多背景"
+                @click="scrollRail(1)"
+              >
+                <component :is="PhCaretRight" :size="14" weight="bold" aria-hidden="true" />
+              </button>
             </div>
+            <p v-if="isPhotoStyle" class="bg-current">
+              背景：{{ bgOptions[bgIndex].label }}
+            </p>
 
             <div class="poster-canvas-wrap">
               <canvas
@@ -858,16 +1031,67 @@ function drawImmersive(
   border-color: var(--vp-c-brand-1);
 }
 
-/* 背景缩略图 */
+/* 背景滑轨: 单行横向滚动, 触屏横滑 + 桌面箭头翻页 */
+.bg-rail {
+  position: relative;
+  margin: 0.85rem 0 0;
+}
+
 .poster-bgs {
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
   gap: 0.45rem;
-  margin: 0.85rem 0 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0.25rem 0.65rem;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.poster-bgs::-webkit-scrollbar {
+  display: none;
+}
+
+.rail-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 50%;
+  background: var(--vp-c-bg-elv);
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.rail-arrow:hover {
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+}
+
+.rail-arrow.left {
+  left: -8px;
+}
+
+.rail-arrow.right {
+  right: -8px;
+}
+
+.bg-current {
+  margin: 0.4rem 0 0.9rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  color: var(--vp-c-text-3);
 }
 
 .bg-thumb {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
   width: 52px;
   height: 40px;
   border: 2px solid var(--vp-c-border);

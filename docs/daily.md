@@ -239,6 +239,8 @@ title: 日常生活
 
 ![](/images/98b1ba6a0f306e8a.webp)
 
+![](/images/619b85c6d92d0245.webp)
+
 ![](/images/601484675f8a2256.webp)
 
 
@@ -253,8 +255,6 @@ title: 日常生活
 <strong>学期内研学（高一高二各一天）所有班适用</strong>
 
 <strong><span style="color:#7f7f7f">研学地点：蒙草蒙牛伊利昭君墓将军衙署博物馆农业基地</span></strong>
-
-![](/images/619b85c6d92d0245.webp)
 
 <strong>假期研学（火箭班优先）</strong>
 

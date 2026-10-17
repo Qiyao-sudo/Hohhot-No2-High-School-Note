@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { withBase } from 'vitepress'
+import ShareBar from './ShareBar.vue'
 import {
   PhGraduationCap,
   PhUsersThree,
@@ -68,6 +69,8 @@ const groups = [
             <component :is="PhChatCircle" :size="16" aria-hidden="true" />
             去留言区提问
           </a>
+          <!-- 首页分享入口: 打开与文档页相同的分享弹窗 -->
+          <ShareBar variant="hero" />
         </div>
       </div>
       <figure class="home-hero-figure">
