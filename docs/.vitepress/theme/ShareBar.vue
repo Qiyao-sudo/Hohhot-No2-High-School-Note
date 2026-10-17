@@ -140,24 +140,14 @@ const styleOptions: { key: PosterStyle; label: string }[] = [
 
 const isPhotoStyle = computed(() => posterStyle.value === 'photo' || posterStyle.value === 'immersive')
 
-// 图片风格可选背景: 首张为源文档航拍图, 其余为官方照片(docs/public/posters/)。
-// thumb 为选择器缩略图(240px 压缩版, posts/thumbs), file 为海报绘制用完整图。
-const bgOptions = [
-  { file: '/images/hero.jpg', thumb: '/posters/thumbs/hero.jpg', label: '校园航拍' },
-  { file: '/posters/bg14.jpg', thumb: '/posters/thumbs/bg14.jpg', label: '操场全景' },
-  { file: '/posters/bg02.jpg', thumb: '/posters/thumbs/bg02.jpg', label: '校门主楼' },
-  { file: '/posters/bg04.jpg', thumb: '/posters/thumbs/bg04.jpg', label: '教学楼' },
-  { file: '/posters/bg21.jpg', thumb: '/posters/thumbs/bg21.jpg', label: '连廊' },
-  { file: '/posters/bg32.jpg', thumb: '/posters/thumbs/bg32.jpg', label: '楼与蓝天' },
-  { file: '/posters/bg34.jpg', thumb: '/posters/thumbs/bg34.jpg', label: '绿树庭院' },
-  { file: '/posters/bg38.jpg', thumb: '/posters/thumbs/bg38.jpg', label: '广场' },
-  { file: '/posters/bg56.jpg', thumb: '/posters/thumbs/bg56.jpg', label: '对称楼群' },
-  { file: '/posters/bg66.jpg', thumb: '/posters/thumbs/bg66.jpg', label: '操场跑道' },
-  { file: '/posters/bg62.jpg', thumb: '/posters/thumbs/bg62.jpg', label: '雕塑' },
-  { file: '/posters/bg60.jpg', thumb: '/posters/thumbs/bg60.jpg', label: '仰拍教学楼' },
-  { file: '/posters/bg35.jpg', thumb: '/posters/thumbs/bg35.jpg', label: '夜景灯光' },
-  { file: '/posters/bg68.jpg', thumb: '/posters/thumbs/bg68.jpg', label: '跑道黄昏' },
-]
+// 图片风格可选背景: 用户指定的 20 张官方照片(docs/public/posters/)。
+// thumb 为选择器缩略图(240px 压缩版), file 为海报绘制用完整图;
+// 名称不展示, label 仅作无障碍提示。
+const bgOptions = Array.from({ length: 20 }, (_, i) => ({
+  file: `/posters/bg${String(i + 1).padStart(2, '0')}.jpg`,
+  thumb: `/posters/thumbs/bg${String(i + 1).padStart(2, '0')}.jpg`,
+  label: `背景 ${i + 1}`,
+}))
 const bgIndex = ref(0)
 
 const posterName = computed(
@@ -222,7 +212,7 @@ async function renderPoster() {
       }).then(loadImage),
       loadImage(withBase('/og-badge.png')).catch(() => null),
     ])
-    // 图片风格: 加载所选背景; 失败(如航拍图被同步清掉)自动回退品牌蓝
+    // 图片风格: 加载所选背景; 失败自动回退品牌蓝
     let bgImg: HTMLImageElement | null = null
     if (isPhotoStyle.value) {
       bgImg = await loadImage(withBase(bgOptions[bgIndex.value].file)).catch(() => null)
@@ -797,9 +787,6 @@ function drawImmersive(
                 <component :is="PhCaretRight" :size="14" weight="bold" aria-hidden="true" />
               </button>
             </div>
-            <p v-if="isPhotoStyle" class="bg-current">
-              背景：{{ bgOptions[bgIndex].label }}
-            </p>
 
             <div class="poster-canvas-wrap">
               <canvas
@@ -1082,11 +1069,8 @@ function drawImmersive(
   right: -8px;
 }
 
-.bg-current {
-  margin: 0.4rem 0 0.9rem;
-  font-size: 0.76rem;
-  letter-spacing: 0.06em;
-  color: var(--vp-c-text-3);
+.rail-arrow:active {
+  transform: translateY(-50%) scale(0.92);
 }
 
 .bg-thumb {
@@ -1102,11 +1086,17 @@ function drawImmersive(
   background-size: cover;
   background-position: center;
   padding: 0;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.15s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bg-thumb:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+}
+
+/* 触感反馈: 按下物理下压感 */
+.bg-thumb:active {
+  transform: scale(0.94);
 }
 
 .bg-thumb.active {
