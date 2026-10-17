@@ -110,7 +110,8 @@ watch(
 
 /* ---------------- 海报: 风格 × 背景 ---------------- */
 
-type PosterStyle = 'white' | 'blue' | 'paper' | 'black' | 'photo' | 'immersive'
+type PosterStyle =
+  | 'white' | 'blue' | 'bigtype' | 'paper' | 'black' | 'split' | 'photo' | 'immersive'
 
 const posterStyle = ref<PosterStyle>('blue')
 const posterDataUrl = ref('')
@@ -120,13 +121,17 @@ const posterCanvas = ref<HTMLCanvasElement | null>(null)
 const styleOptions: { key: PosterStyle; label: string }[] = [
   { key: 'white', label: '简约白' },
   { key: 'blue', label: '品牌蓝' },
+  { key: 'bigtype', label: '大字极简' },
   { key: 'paper', label: '米黄纸感' },
   { key: 'black', label: '黑金典雅' },
+  { key: 'split', label: '左右分栏' },
   { key: 'photo', label: '上图下文' },
   { key: 'immersive', label: '全图沉浸' },
 ]
 
-const isPhotoStyle = computed(() => posterStyle.value === 'photo' || posterStyle.value === 'immersive')
+const isPhotoStyle = computed(() =>
+  posterStyle.value === 'split' || posterStyle.value === 'photo' || posterStyle.value === 'immersive'
+)
 
 // 图片风格可选背景: 用户指定的官方照片(docs/public/posters/, 已去重)。
 // thumb 为选择器缩略图(240px 压缩版), file 为海报绘制用完整图;
@@ -210,8 +215,10 @@ async function renderPoster() {
     if (!ctx) return
     if (posterStyle.value === 'white') drawWhite(ctx, canvas, qrImg, badgeImg)
     else if (posterStyle.value === 'blue') drawBlue(ctx, canvas, qrImg, badgeImg)
+    else if (posterStyle.value === 'bigtype') drawBigType(ctx, canvas, qrImg, badgeImg)
     else if (posterStyle.value === 'paper') drawPaper(ctx, canvas, qrImg, badgeImg)
     else if (posterStyle.value === 'black') drawBlackGold(ctx, canvas, qrImg, badgeImg)
+    else if (posterStyle.value === 'split') drawSplit(ctx, canvas, qrImg, badgeImg, bgImg!)
     else if (posterStyle.value === 'photo') drawPhoto(ctx, canvas, qrImg, badgeImg, bgImg!)
     else drawImmersive(ctx, canvas, qrImg, badgeImg, bgImg!)
     posterDataUrl.value = canvas.toDataURL('image/png')
@@ -294,15 +301,56 @@ function wrapCenter(
   return y + (lines.length - 1) * lineH
 }
 
+// 左对齐自动换行(超出 maxLines 截断加省略号), 返回结束 y
+function wrapLeft(
+  ctx: CanvasRenderingContext2D,
+  text: string, x: number, y: number, maxW: number,
+  lineH: number, maxLines: number
+): number {
+  const chars = [...text]
+  const lines: string[] = []
+  let line = ''
+  for (const ch of chars) {
+    if (ctx.measureText(line + ch).width > maxW && line) {
+      lines.push(line)
+      line = ch
+      if (lines.length === maxLines) break
+    } else {
+      line += ch
+    }
+  }
+  if (lines.length < maxLines && line) lines.push(line)
+  if (lines.length === maxLines) {
+    let last = lines[maxLines - 1]
+    if (lines.join('').length < chars.length) {
+      while (ctx.measureText(last + '…').width > maxW && last.length > 1) {
+        last = last.slice(0, -1)
+      }
+      lines[maxLines - 1] = last + '…'
+    }
+  }
+  ctx.textAlign = 'left'
+  lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineH))
+  return y + (lines.length - 1) * lineH
+}
+
 // cover 模式铺满绘制(整图或指定高度区域)
+// cover 模式铺满任意矩形区域(居中裁切)
+function drawCoverRect(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement, x: number, y: number, w: number, h: number
+) {
+  const scale = Math.max(w / img.width, h / img.height)
+  const dw = img.width * scale
+  const dh = img.height * scale
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh)
+}
+
 function drawCover(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement, W: number, regionH: number, offsetY = 0
 ) {
-  const scale = Math.max(W / img.width, regionH / img.height)
-  const dw = img.width * scale
-  const dh = img.height * scale
-  ctx.drawImage(img, (W - dw) / 2, offsetY + (regionH - dh) / 2, dw, dh)
+  drawCoverRect(ctx, img, 0, offsetY, W, regionH)
 }
 
 // 底部公共块: 二维码白卡 + 提示 + 网址 + 校训
@@ -557,6 +605,150 @@ function drawBlackGold(
     hintColor: 'rgba(242, 232, 213, 0.82)',
     mottoColor: 'rgba(242, 232, 213, 0.45)',
   })
+}
+
+/* ---------------- 版式: 大字极简(超大标题 + 非对称底部) ---------------- */
+
+function drawBigType(
+  ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
+  qr: HTMLImageElement, badge: HTMLImageElement | null
+) {
+  const W = canvas.width
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, W, canvas.height)
+
+  if (badge) {
+    circleImage(ctx, badge, W / 2, 168, 74, '#e8eefb', 10)
+  }
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#55564d'
+  ctx.font = `600 36px ${FONT}`
+  ctx.fillText(SITE_TITLE, W / 2, 308)
+
+  // 超大标题主导画面
+  ctx.fillStyle = '#26281f'
+  ctx.font = `700 96px ${FONT}`
+  const titleEndY = wrapCenter(ctx, pageTitle.value, W / 2, 480, 920, 128, 4)
+
+  ctx.fillStyle = '#2f5ad8'
+  roundRect(ctx, W / 2 - 50, titleEndY + 78, 100, 10, 5)
+  ctx.fill()
+
+  ctx.fillStyle = '#8a8b80'
+  ctx.font = `400 30px ${FONT}`
+  ctx.fillText('历届学长整理 · 免费开放 · 持续更新', W / 2, titleEndY + 168)
+
+  // 底部非对称: 左二维码卡 + 右文字列
+  const cardX = 96
+  const cardY = 1080
+  const cardW = 250
+  ctx.save()
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.10)'
+  ctx.shadowBlur = 22
+  ctx.shadowOffsetY = 8
+  ctx.fillStyle = '#ffffff'
+  roundRect(ctx, cardX, cardY, cardW, cardW, 20)
+  ctx.fill()
+  ctx.restore()
+  ctx.strokeStyle = '#e6e6e2'
+  ctx.lineWidth = 2
+  roundRect(ctx, cardX, cardY, cardW, cardW, 20)
+  ctx.stroke()
+  ctx.drawImage(qr, cardX + 20, cardY + 20, cardW - 40, cardW - 40)
+
+  const tx = cardX + cardW + 56
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#26281f'
+  ctx.font = `600 34px ${FONT}`
+  ctx.fillText('长按识别二维码', tx, cardY + 82)
+  ctx.fillStyle = '#8a8b80'
+  ctx.font = `400 29px ${FONT}`
+  ctx.fillText('查看本文全文', tx, cardY + 128)
+  ctx.fillStyle = '#2f5ad8'
+  ctx.font = `700 42px ${FONT}`
+  ctx.fillText(SITE_HOST, tx, cardY + 198)
+
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#b4b5ae'
+  ctx.font = `400 26px ${FONT}`
+  ctx.fillText(SITE_MOTTO, W / 2, 1408)
+}
+
+/* ---------------- 版式: 左右分栏(左内容栏 + 右整高照片, 背景可选) ---------------- */
+
+function drawSplit(
+  ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
+  qr: HTMLImageElement, badge: HTMLImageElement | null,
+  bg: HTMLImageElement
+) {
+  const W = canvas.width
+  const H = canvas.height
+  const px = 660 // 右侧照片栏起点
+
+  // 左侧品牌蓝面板
+  const grad = ctx.createLinearGradient(0, 0, 0, H)
+  grad.addColorStop(0, '#24459f')
+  grad.addColorStop(1, '#2f5ad8')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, W, H)
+
+  // 右侧整高照片(裁切)
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(px, 0, W - px, H)
+  ctx.clip()
+  drawCoverRect(ctx, bg, px, 0, W - px, H)
+  ctx.restore()
+  // 栏间细白线
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
+  ctx.fillRect(px - 3, 0, 3, H)
+
+  if (badge) {
+    circleImage(ctx, badge, 148, 148, 64, 'rgba(255, 255, 255, 0.85)', 8)
+  }
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#ffffff'
+  ctx.font = `600 34px ${FONT}`
+  ctx.fillText(SITE_TITLE, 90, 262)
+
+  ctx.font = `700 58px ${FONT}`
+  const titleEndY = wrapLeft(ctx, pageTitle.value, 90, 382, 500, 82, 3)
+
+  ctx.fillStyle = '#9db4f0'
+  roundRect(ctx, 90, titleEndY + 62, 72, 8, 4)
+  ctx.fill()
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+  ctx.font = `400 28px ${FONT}`
+  ctx.fillText('历届学长整理 · 免费开放', 90, titleEndY + 148)
+
+  // 左下二维码卡 + 右侧文字列
+  const cardX = 90
+  const cardY = 1020
+  const cardW = 260
+  ctx.save()
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
+  ctx.shadowBlur = 24
+  ctx.shadowOffsetY = 8
+  ctx.fillStyle = '#ffffff'
+  roundRect(ctx, cardX, cardY, cardW, cardW, 22)
+  ctx.fill()
+  ctx.restore()
+  ctx.drawImage(qr, cardX + 20, cardY + 20, cardW - 40, cardW - 40)
+
+  const tx = cardX + cardW + 42
+  ctx.textAlign = 'left'
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
+  ctx.font = `500 30px ${FONT}`
+  ctx.fillText('长按识别二维码', tx, cardY + 84)
+  ctx.fillText('查看本文全文', tx, cardY + 130)
+  ctx.fillStyle = '#ffffff'
+  ctx.font = `700 36px ${FONT}`
+  ctx.fillText(SITE_HOST, tx, cardY + 200)
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
+  ctx.font = `400 24px ${FONT}`
+  ctx.fillText(SITE_MOTTO, cardX, cardY + cardW + 84)
 }
 
 /* ---------------- 风格五: 上图下文(背景可选) ---------------- */
