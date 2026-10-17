@@ -1074,7 +1074,8 @@ function drawImmersive(
   justify-content: center;
   flex-wrap: wrap;
   gap: 0.7rem;
-  margin-top: 1.1rem;
+  /* 与海报预览拉开距离, 避免按钮贴着画布投影 */
+  margin-top: 2rem;
 }
 
 .poster-download {
