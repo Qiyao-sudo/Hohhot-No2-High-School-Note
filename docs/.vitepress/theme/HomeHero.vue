@@ -8,6 +8,7 @@ import {
   PhBookOpenText,
   PhChatCircle,
   PhArrowRight,
+  PhHeart,
 } from '@phosphor-icons/vue'
 
 // 首页 Hero 与板块目录(真实校园航拍图来自源文档"航拍影像"板块)
@@ -71,6 +72,10 @@ const groups = [
           </a>
           <!-- 首页分享入口: 打开与文档页相同的分享弹窗 -->
           <ShareBar variant="hero" />
+          <a class="btn btn-ghost" :href="withBase('/support')">
+            <component :is="PhHeart" :size="16" weight="fill" aria-hidden="true" />
+            支持本项目
+          </a>
         </div>
       </div>
       <figure class="home-hero-figure">
