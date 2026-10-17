@@ -131,7 +131,7 @@ const isPhotoStyle = computed(() => posterStyle.value === 'photo' || posterStyle
 // 图片风格可选背景: 用户指定的官方照片(docs/public/posters/, 已去重)。
 // thumb 为选择器缩略图(240px 压缩版), file 为海报绘制用完整图;
 // 名称不展示, label 仅作无障碍提示。
-const bgOptions = Array.from({ length: 19 }, (_, i) => ({
+const bgOptions = Array.from({ length: 18 }, (_, i) => ({
   file: `/posters/bg${String(i + 1).padStart(2, '0')}.jpg`,
   thumb: `/posters/thumbs/bg${String(i + 1).padStart(2, '0')}.jpg`,
   label: `背景 ${i + 1}`,
